@@ -12,9 +12,9 @@ data = h5read(filename, "/data");
 data_info = jsondecode(string(h5read(filename, "/data_info")));
 first_data_info = data_info(1, 1)  % (frame, sensor);
 
-rss_version = string(h5read(filename, "/rss_version"));
-lib_version = string(h5read(filename, "/lib_version"));
-timestamp   = string(h5read(filename, "/timestamp"));
+rss_version = string(h5read(C:\Users\p1553835\OneDrive\Documents\GitHub\smart-touchless-control-radar\project files, "/rss_version"));
+lib_version = string(h5read(C:\Users\p1553835\OneDrive\Documents\GitHub\smart-touchless-control-radar\project files, "/lib_version"));
+timestamp   = string(h5read(C:\Users\p1553835\OneDrive\Documents\GitHub\smart-touchless-control-radar\project files, "/timestamp"));
 
 %end of loadtestfile
 
