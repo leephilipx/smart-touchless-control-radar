@@ -1,6 +1,6 @@
 clear all; close all; clc
 
-filename = "data1fb1.h5";
+filename = "raw data xm122 yvonne/XM122 range(0.2m-1m),Max buffered frame 128,Update rate 30Hz [leftright twice1].h5";
 info = h5info(filename);
 
 data = h5read(filename, "/data");
@@ -26,7 +26,7 @@ s1  = s1r + j*s1i;
 Nrange = NTS;
 
 Rmin   = 0.2;
-Rmax   = 0.8;
+Rmax   = 1.0;
 Rstep  = 4.8400e-04;    % meter
 
 % fast time axis to obtain range
@@ -44,7 +44,7 @@ axisTime  = axisFrame/FrameRate;            % 1xNframe
 [rPeak rIndex] = max(R1abs);
 R1abs = R1abs/max(rPeak);
 rPeak = axisRange(rIndex);
-rMaxcm = rPeak(500)*100; rMaxcm=round(rMaxcm*10)/10;
+rMaxcm = rPeak(100)*100; rMaxcm=round(rMaxcm*10)/10;
 
 Tmax = round(max(axisTime)*100)/100;
 
@@ -63,7 +63,6 @@ fh1=figure(1);  % Range vs frame
     title('Output signal profile','fontsize',12)
     set(gca,'XTick',[1 200:200:Nframe],'YTick',y3tick,'ZTick',[0 1])
     view(45,60)
-set(fh1,'Position',[10 550 500 400])
 print -djpeg fig1_surf.jpg;
 
 %--------------------------------------------------------------
@@ -77,7 +76,6 @@ fh2=figure(2); % Range vs Time
     xlim([1 Nframe]);
     ylim([Rmin Rmax]*100)
     set(gca,'YDir','normal','XTick',[1 200:200:Nframe],'YTick',y3tick)
-    set(fh2,'Position',[10 60 500 400])
 print -djpeg fig2_RangeSweep.jpg
 
 %eof
