@@ -1,6 +1,6 @@
 clear all; close all; clc
 
-filename = "raw data xm122 yvonne/XM122 range(0.2m-1m),Max buffered frame 128,Update rate 30Hz [leftright twice1].h5";
+filename = "raw data xm122 yvonne/XM122 range(0.2m-1m),Max buffered frame 128,Update rate 30Hz [toleft twice1].h5";
 info = h5info(filename);
 
 data = h5read(filename, "/data");
