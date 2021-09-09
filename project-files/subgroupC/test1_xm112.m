@@ -10,7 +10,7 @@ Rstep  = 4.8400e-04;    % meter
 
 FrameRate = 200;
 
-filename = "raw data xm122 yvonne/XM122 range(0.2m-1m),Max buffered frame 128,Update rate 30Hz [toright twice3].h5";
+filename = "xm112 (0.5m) sample.h5";
 info = h5info(filename);
 
 data = h5read(filename, "/data");
