@@ -1,6 +1,16 @@
 clear all; close all; clc
 
-filename = "raw data xm122 yvonne/XM122 range(0.2m-1m),Max buffered frame 128,Update rate 30Hz [toleft twice1].h5";
+f0=60e9;       	% radar operating frequency
+c=3e8;        	% speed of light
+lambda=c/f0;    % radar wavelength
+
+Rmin   = 0.2;
+Rmax   = 2.2;
+Rstep  = 4.8400e-04;    % meter
+
+FrameRate = 200;
+
+filename = "raw data xm122 yvonne/XM122 range(0.2m-1m),Max buffered frame 128,Update rate 30Hz [toright twice3].h5";
 info = h5info(filename);
 
 data = h5read(filename, "/data");
@@ -12,27 +22,21 @@ data = h5read(filename, "/data");
 data_info = jsondecode(string(h5read(filename, "/data_info")));
 first_data_info = data_info(1, 1)  % (frame, sensor);
 
-rss_version = string(h5read(filename, "/rss_version"));
-lib_version = string(h5read(filename, "/lib_version"));
-timestamp   = string(h5read(filename, "/timestamp"));
+% rss_version = string(h5read(filename, "/rss_version"))
+% lib_version = string(h5read(filename, "/lib_version"))
+% timestamp   = string(h5read(filename, "/timestamp"))
 
 %end of loadtestfile
 
-s1r = squeeze(data.r);
-s1i = squeeze(data.i);
-s1  = s1r + j*s1i;
+s1r = squeeze(data.r);  % 2272x612  11123712  double
+s1i = squeeze(data.i);  % 2272x612  11123712  double
+s1  = s1r + j*s1i;      % 2272x612  22247424  double complex 
 
-[NTS Nframe]=size(s1)
+[NTS Nframe]=size(s1)   % NTS = 2272, Nframe = 612
 Nrange = NTS;
-
-Rmin   = 0.2;
-Rmax   = 1.0;
-Rstep  = 4.8400e-04;    % meter
 
 % fast time axis to obtain range
 % Range Vs Frame
-
-FrameRate = 200;
 
 %===================
 R1abs = abs(s1);
@@ -50,7 +54,8 @@ Tmax = round(max(axisTime)*100)/100;
 
 y3tick=[Rmin*100 rMaxcm Rmax*100];
 
-%--------------------------------------------------------------
+R1db=20*log10(R1abs);
+
 fh1=figure(1);  % Range vs frame
     surf(axisFrame, axisRange*100, R1abs); 
     colormap(jet)
@@ -59,16 +64,15 @@ fh1=figure(1);  % Range vs frame
     ylim([Rmin Rmax]*100); 
     zlim([0 1])
     xlabel('Sweep','fontsize',12)
-    ylabel('Distance (cm)','fontsize',12)
+    ylabel('Range (cm)','fontsize',12)
     title('Output signal profile','fontsize',12)
     set(gca,'XTick',[1 200:200:Nframe],'YTick',y3tick,'ZTick',[0 1])
     view(45,60)
-print -djpeg fig1_surf.jpg;
+    set(fh1,'Position',[10 450 400 300])
+print -djpeg fig1_RangeSweep3D.jpg;
 
-%--------------------------------------------------------------
-R1db=20*log10(R1abs);
 fh2=figure(2); % Range vs Time
-    imagesc(axisFrame, axisRange*100, R1db, [-20 0]);
+    imagesc(axisFrame, axisRange*100, R1abs);
     xlabel('Sweep','fontsize',12)
     ylabel('Range (cm)','fontsize',12);
     title('Output signal profile','fontsize',12)    
@@ -76,7 +80,10 @@ fh2=figure(2); % Range vs Time
     xlim([1 Nframe]);
     ylim([Rmin Rmax]*100)
     set(gca,'YDir','normal','XTick',[1 200:200:Nframe],'YTick',y3tick)
-print -djpeg fig2_RangeSweep.jpg
+    set(fh2,'Position',[10 65 400 300])
+print -djpeg fig2_RangeSweep2D.jpg
+
+test2_stft
 
 %eof
  

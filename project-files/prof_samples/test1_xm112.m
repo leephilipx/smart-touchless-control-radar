@@ -10,7 +10,7 @@ Rstep  = 4.8400e-04;    % meter
 
 FrameRate = 200;
 
-filename = "xm112_050cm.h5";
+filename = "XM122 range(0.2m-1m),Max buffered frame 128,Update rate 30Hz, HWAAS =1 [press].h5";
 info = h5info(filename);
 
 data = h5read(filename, "/data");
@@ -48,7 +48,7 @@ axisTime  = axisFrame/FrameRate;            % 1xNframe
 [rPeak rIndex] = max(R1abs);
 R1abs = R1abs/max(rPeak);
 rPeak = axisRange(rIndex);
-rMaxcm = rPeak(500)*100; rMaxcm=round(rMaxcm*10)/10;
+rMaxcm = rPeak(100)*100; rMaxcm=round(rMaxcm*10)/10;
 
 Tmax = round(max(axisTime)*100)/100;
 
