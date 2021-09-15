@@ -10,7 +10,7 @@ Rstep  = 4.8400e-04;    % meter
 
 FrameRate = 128;
 
-filename = "raw data xm122\0.3-0.6 40Hz 128 frames\anticlockwise.h5";
+filename = "raw data xm122\0.3-0.6 40Hz 128 frames\swipe right.h5";
 info = h5info(filename);
 
 data = h5read(filename, "/data");
