@@ -4,13 +4,13 @@ f0=60e9;       	% radar operating frequency
 c=3e8;        	% speed of light
 lambda=c/f0;    % radar wavelength
 
-Rmin   = 0.2;
-Rmax   = 2.2;
+Rmin   = 0.3;
+Rmax   = 0.6;
 Rstep  = 4.8400e-04;    % meter
 
-FrameRate = 200;
+FrameRate = 128;
 
-filename = "raw data xm122\0.3-0.6 40Hz 128 frames\press 1.h5";
+filename = "raw data xm122\0.3-0.6 40Hz 128 frames\anticlockwise.h5";
 info = h5info(filename);
 
 data = h5read(filename, "/data");
