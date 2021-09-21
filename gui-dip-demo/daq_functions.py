@@ -87,11 +87,6 @@ class AcconeerSensorDataCollection:
         }
 
 
-    def autodetect_serial_port(self):
-
-        return utils.autodetect_serial_port()
-
-
     def list_serial_ports(self):
 
         try:
@@ -127,6 +122,16 @@ class AcconeerSensorDataCollection:
         return ports
 
 
+    def autoconnect_serial_port(self):
+        ports = self.list_serial_ports()
+        for port in ports:
+            try:
+                self.connect_sensor(port)
+                return port
+            except Exception:
+                pass
+
+
     def connect_sensor(self, port):
 
         if not self.connection_state:
@@ -137,8 +142,9 @@ class AcconeerSensorDataCollection:
             try:
                 info = self.client.connect()
                 self.rss_version = info.get('version_str', None)
-                print(f'>> Connection success! RSS v{self.rss_version}')
+                print(f'>> Connection success on {port}! RSS v{self.rss_version}')
                 self.connection_state = True
+                return True
                 
             except Exception:
                 print('>> Could not connect to sensor, please check the physical connection / free up the port.')
@@ -182,16 +188,18 @@ class AcconeerSensorDataCollection:
                 print('>> Session started!')
                 self.depths = utils.get_range_depths(self.__sensor_config, self.session_info)
                 self.Ndepths = self.depths.size
+                return True
             except Exception:
                 print('>> Session failed to start!')
+                return
 
 
     def stop_session(self, verbose=True):
         
         if self.session_state:
             try:
-                self.client.stop_session()
                 self.session_state = False
+                self.client.stop_session()
                 print('>> Active session stopped!')
             except Exception:
                 pass
@@ -209,12 +217,23 @@ class AcconeerSensorDataCollection:
     def get_data(self):
 
         if not self.check_connection_state(): return
-        self.data = np.zeros([self.Nframes, self.Ndepths], dtype='complex')
-        for frame in range(self.Nframes):
-            self.data[frame, :] = self.client.get_next()[1]
-        
-        return self.data
+        try:
+            self.data = np.zeros([self.Nframes, self.Ndepths], dtype='complex')
+            for frame in range(self.Nframes):
+                self.data[frame, :] = self.client.get_next()[1]
+            return self.data
 
+        except Exception:
+            return None
+
+
+    def save_data(self, npy_filename):
+
+        if not os.path.isdir('recordings'):
+            os.makedirs('recordings')
+        npy_filename = (os.path.join('recordings', npy_filename)).lower()
+        np.save(npy_filename, self.data)
+        print(f'>> Data saved to {npy_filename}')
 
 
 if __name__ == '__main__':

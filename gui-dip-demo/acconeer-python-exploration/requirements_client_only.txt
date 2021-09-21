@@ -1,8 +1,0 @@
-setuptools
-wheel
-numpy
-pyserial
-h5py
-pyyaml
-attrs
-docutils

@@ -1,3 +1,0 @@
-sklearn
-tensorflow
-keras
