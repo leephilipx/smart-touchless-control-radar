@@ -2,6 +2,11 @@ from tkinter import *
 from tkinter import ttk
 from daq_functions import AcconeerSensorDataCollection
 from threading import Thread
+import numpy as np
+
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 class DataAcquisiton:
 
@@ -16,7 +21,7 @@ class DataAcquisiton:
         root.rowconfigure(0, weight=1)
         self.create_widgets(mainframe)
         self.init_states()
-        self.autoconnect()
+        # self.autoconnect()
 
     def create_widgets(self, mainframe):
         # ---------
@@ -44,8 +49,16 @@ class DataAcquisiton:
         self.counter_l.grid(row=4, column=4, sticky=(E))
         # ---------
         ttk.Separator(mainframe, orient=HORIZONTAL).grid(row=5, column=1, columnspan=4, sticky=(E,W))
-        self.frameMagPlot = ttk.Labelframe(mainframe, text='Magnitude Plot', height=250, width=500)
+        self.frameMagPlot = ttk.Labelframe(mainframe, text='Magnitude Plot', width=500)
         self.frameMagPlot.grid(row=6, column=1, columnspan=4, sticky=(E,W))
+
+        self.fig = plt.figure(figsize=(4,3), dpi=50)
+        self.ax = self.fig.add_subplot(111)
+        self.ax.axis('off')
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frameMagPlot)
+        self.canvas.get_tk_widget().grid(row=7, column=1, columnspan=4, rowspan=2, sticky=(E,W))
+        self.plot_mag()
+
         # ---------
         ttk.Separator(mainframe, orient=HORIZONTAL).grid(row=9, column=1, columnspan=4, sticky=(E,W))
         self.frameConfigInfo = ttk.Labelframe(mainframe, text='Config Info', height=250, width=500)
@@ -144,7 +157,11 @@ class DataAcquisiton:
         self.stop_b['state'] = DISABLED
         self.log_label['text'] = f'Recording ended, start a new session!'
 
-
+    def plot_mag(self):
+        data = np.eye(5, dtype = float)
+        self.ax.imshow(data)
+        self.canvas.draw_idle()
+        # self.canvas.update_idletasks()
 if __name__ == '__main__':
     root = Tk()
     DataAcquisiton(root, method='serial', Nframes=128, config_path='sensor_configs.json')
