@@ -215,16 +215,24 @@ class AcconeerSensorDataCollection:
 
 
     def get_data(self):
+        
+        self.data[0, :] = next(self.get_data_one_frame(init=True))[0]
+        for frame in range(1, self.Nframes):
+            self.data[frame, :]  = next(self.get_data_one_frame())[0]
 
-        if not self.check_connection_state(): return
-        try:
+        return self.data, self.magplot
+
+
+    def get_data_one_frame(self, init=False):
+        
+        if init:
             self.data = np.zeros([self.Nframes, self.Ndepths], dtype='complex')
-            for frame in range(self.Nframes):
-                self.data[frame, :] = self.client.get_next()[1]
-            return self.data
+            self.magplot = np.zeros([self.Ndepths, 100], dtype=int)
+        
+        frameArray = self.client.get_next()[1]
+        self.magplot = np.hstack([self.magplot[:, 1:], np.abs(frameArray).T])
 
-        except Exception:
-            return None
+        yield frameArray, self.magplot
 
 
     def save_data(self, npy_filename):
@@ -239,7 +247,9 @@ class AcconeerSensorDataCollection:
 if __name__ == '__main__':
 
     radar = AcconeerSensorDataCollection(method='serial', Nframes=128, config_path='sensor_configs.json')
-    port = radar.autodetect_serial_port()
+    port = radar.autoconnect_serial_port()
     radar.connect_sensor(port)
     radar.start_session()
+    radar.get_data()
+    radar.get_data()
     

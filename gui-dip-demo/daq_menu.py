@@ -3,10 +3,12 @@ from tkinter import ttk
 from daq_functions import AcconeerSensorDataCollection
 from threading import Thread
 import numpy as np
+import time
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
+
 
 class DataAcquisiton:
 
@@ -21,7 +23,7 @@ class DataAcquisiton:
         root.rowconfigure(0, weight=1)
         self.create_widgets(mainframe)
         self.init_states()
-        # self.autoconnect()
+        self.autoconnect()
 
     def create_widgets(self, mainframe):
         # ---------
@@ -42,7 +44,7 @@ class DataAcquisiton:
         self.filename_l = ttk.Label(mainframe, text="Filename (*.npy): ")
         self.filename_l.grid(row=4, column=1, sticky=(W))
         self.filename_val = StringVar()
-        self.filename_val.set(".npy")
+        self.filename_val.set("gg.npy")
         self.filename_entry = ttk.Entry(mainframe, textvariable=self.filename_val)
         self.filename_entry.grid(row=4, column=2, columnspan=2, sticky=(E,W))
         self.counter_l = ttk.Label(mainframe, text="Count = 0", foreground="blue")
@@ -51,14 +53,13 @@ class DataAcquisiton:
         ttk.Separator(mainframe, orient=HORIZONTAL).grid(row=5, column=1, columnspan=4, sticky=(E,W))
         self.frameMagPlot = ttk.Labelframe(mainframe, text='Magnitude Plot', width=500)
         self.frameMagPlot.grid(row=6, column=1, columnspan=4, sticky=(E,W))
-
-        self.fig = plt.figure(figsize=(4,3), dpi=50)
+        self.fig = plt.figure(figsize=(10,6))
         self.ax = self.fig.add_subplot(111)
         self.ax.axis('off')
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frameMagPlot)
         self.canvas.get_tk_widget().grid(row=7, column=1, columnspan=4, rowspan=2, sticky=(E,W))
-        self.plot_mag()
-
+        self.hi = ttk.Button(mainframe, text="TEST", command=self.plot_mag)
+        self.hi.grid(row=8, column=1, sticky=(E,W))
         # ---------
         ttk.Separator(mainframe, orient=HORIZONTAL).grid(row=9, column=1, columnspan=4, sticky=(E,W))
         self.frameConfigInfo = ttk.Labelframe(mainframe, text='Config Info', height=250, width=500)
@@ -66,10 +67,12 @@ class DataAcquisiton:
         config_info = '\n'.join([f'{elem[0]}: {elem[1]}' for elem in self.config_dict.items()])
         self.config_l = ttk.Label(self.frameConfigInfo, text=config_info).grid(row=10, column=1, columnspan=4, sticky=(N,W))
         # ---------
+        
+
         for child in mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
         self.filename_entry.focus()
-        root.bind("<Return>", self.start)    
+        root.bind("<Return>", self.start)
 
     def init_states(self):
         self.start_b['state'] = DISABLED
@@ -98,7 +101,7 @@ class DataAcquisiton:
     def record(self):
         self.log_label['text'] = f'Recording hand gesture ...'
         self.update_counter()
-        if self.radar.get_data() is not None:
+        if self.plot_mag() is not None:
             self.log_label['text'] = f'Hand gesture recorded!'
             self.next_b['state'] = NORMAL
             self.discard_b['state'] = NORMAL
@@ -158,10 +161,17 @@ class DataAcquisiton:
         self.log_label['text'] = f'Recording ended, start a new session!'
 
     def plot_mag(self):
-        data = np.eye(5, dtype = float)
-        self.ax.imshow(data)
-        self.canvas.draw_idle()
+        self.radar.data[0, :] = next(self.radar.get_data_one_frame(init=True))[0]
+        for frame in range(1, self.radar.Nframes):
+            self.radar.data[frame, :], data  = next(self.radar.get_data_one_frame())
+            self.ax.imshow(data, aspect='auto', origin='lower')
+            self.canvas.draw_idle()
+        x = data
+        
+        return True
         # self.canvas.update_idletasks()
+
+
 if __name__ == '__main__':
     root = Tk()
     DataAcquisiton(root, method='serial', Nframes=128, config_path='sensor_configs.json')
