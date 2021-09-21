@@ -1,5 +1,6 @@
 import os, numpy as np
 from re import findall
+from json import loads
 from acconeer.exptool import utils, clients, configs
 
 
@@ -7,9 +8,9 @@ class AcconeerSensorDataCollection:
 
     '''
     Creates a sensor object and its helper functions:
-    • Connect to the Acconeer Radar sensor via serial/socket,
-    • Load sensor configs from a json file,
-    • Obtain data via IQ mode and save it to a .npy file.
+    • Load sensor configs from a json file
+    • Connect to the Acconeer Radar sensor via serial/socket
+    • Obtain data via IQ mode and save it to a .npy file
     '''
 
     def __init__(self, method, Nframes, config_path='sensor_configs.json'):
@@ -18,10 +19,76 @@ class AcconeerSensorDataCollection:
         self.session_state = False
         self.method = method
         self.Nframes = Nframes
-        self.config_path = config_path
+        self.__sensor_config = self.get_config(config_path)
+
+
+    def get_config(self, config_path):
+
+        '''
+        Loads configs from an external json file
+
+        IQServiceConfig
+        mode .............................. IQ
+        sensor ............................ [1]
+        range_interval .................... [0.2, 0.8]
+        profile ........................... PROFILE_2
+        update_rate ....................... 30.0
+        sampling_mode ..................... A
+        repetition_mode ................... HOST_DRIVEN
+        downsampling_factor ............... 1
+        hw_accelerated_average_samples .... 10
+        gain .............................. 0.5
+        maximize_signal_attenuation ....... False
+        noise_level_normalization ......... True
+        depth_lowpass_cutoff_ratio ........ None
+        tx_disable ........................ False
+        power_save_mode ................... ACTIVE
+        asynchronous_measurement .......... True
+        '''
+
+        try:
+            with open(config_path, 'r') as f:
+                ext_dict = loads(f.read())
+            config = configs.IQServiceConfig()
+            config.hw_accelerated_average_samples = ext_dict['HWAAS']
+            config.gain = ext_dict['gain']
+            config.power_save_mode = ext_dict['power_save_mode']
+            config.profile = ext_dict['profile']
+            config.range_interval =[ext_dict['range_min'], ext_dict['range_max']]
+            config.update_rate = ext_dict['update_rate']
+            print(f'>> Successfully loaded {config_path}')
+
+        except Exception:
+            print('>> File not found / invalid json file! Using default configs ...')
+            config = configs.IQServiceConfig()
+
+        return config
+
+
+    def get_config_dict(self):
+
+        return {
+            'mode': self.__sensor_config.mode,
+            'sensor': self.__sensor_config.sensor,
+            'range_interval': self.__sensor_config.range_interval,
+            'profile': self.__sensor_config.profile,
+            'update_rate': self.__sensor_config.update_rate,
+            'sampling_mode': self.__sensor_config.sampling_mode,
+            'repetition_mode': self.__sensor_config.repetition_mode,
+            'downsampling_factor': self.__sensor_config.downsampling_factor,
+            'hw_accelerated_average_samples': self.__sensor_config.hw_accelerated_average_samples,
+            'gain': self.__sensor_config.gain,
+            'maximize_signal_attenuation': self.__sensor_config.maximize_signal_attenuation,
+            'noise_level_normalization': self.__sensor_config.noise_level_normalization,
+            'depth_lowpass_cutoff_ratio': self.__sensor_config.depth_lowpass_cutoff_ratio,
+            'tx_disable': self.__sensor_config.tx_disable,
+            'power_save_mode': self.__sensor_config.power_save_mode,
+            'asynchronous_measurement': self.__sensor_config.asynchronous_measurement,
+        }
 
 
     def autodetect_serial_port(self):
+
         return utils.autodetect_serial_port()
 
 
@@ -98,47 +165,18 @@ class AcconeerSensorDataCollection:
         if self.connection_state:
             return True
         else:
-            print('>> Connection not established with client. Please run AcconeerSensorDIP.connect_sensor()')
+            print('>> Connection not established with client. Please run connect_sensor()')
             return False
-        
-
-    def get_data(self):
-
-        if not self.check_connection_state(): return
-        return self.client.get_next()
 
 
     def start_session(self):
-        
-        '''
-        IQServiceConfig
-        mode .............................. IQ
-        sensor ............................ [1]
-        range_interval .................... [0.2, 0.8]
-        profile ........................... PROFILE_2
-        update_rate ....................... 30.0
-        sampling_mode ..................... A
-        repetition_mode ................... HOST_DRIVEN
-        downsampling_factor ............... 1
-        hw_accelerated_average_samples .... 10
-        gain .............................. 0.5
-        maximize_signal_attenuation ....... False
-        noise_level_normalization ......... True
-        depth_lowpass_cutoff_ratio ........ None
-        tx_disable ........................ False
-        power_save_mode ................... ACTIVE
-        asynchronous_measurement .......... True
-        '''
 
         if not self.check_connection_state(): return
-        self.sensor_config = configs.IQServiceConfig()
-        self.sensor_config.range_interval = [0.3, 0.6]
-        self.sensor_config.update_rate = 30
 
         if not self.session_state:
             
             try:
-                self.session_info = self.client.setup_session(self.sensor_config)
+                self.session_info = self.client.setup_session(self.__sensor_config)
                 self.client.start_session()
                 self.session_state = True
                 print('>> Session started!')
@@ -166,10 +204,18 @@ class AcconeerSensorDataCollection:
         self.disconnect_sensor(verbose=False)
 
 
+    def get_data(self):
+
+        if not self.check_connection_state(): return
+
+        return self.client.get_next()
+
+
 
 if __name__ == '__main__':
 
-    radar = AcconeerSensorDataCollection(method='serial', Nframes=128, config_path='')
+    radar = AcconeerSensorDataCollection(method='serial', Nframes=128, config_path='sensor_configs.json')
     port = radar.autodetect_serial_port()
     radar.connect_sensor(port)
     radar.start_session()
+    print(radar.get_config_dict(), end='\n\n')
