@@ -124,13 +124,13 @@ class AcconeerSensorDataCollection:
 
     def autoconnect_serial_port(self):
         ports = self.list_serial_ports()
-        for port in ports:
+        for port in ports[::-1]:
             try:
-                self.connect_sensor(port)
-                return port
+                if self.connect_sensor(port):
+                    return port
             except Exception:
                 pass
-
+    
 
     def connect_sensor(self, port):
 
@@ -138,7 +138,7 @@ class AcconeerSensorDataCollection:
 
             self.client = clients.UARTClient(port)
             self.client.squeeze = False
-
+            
             try:
                 info = self.client.connect()
                 self.rss_version = info.get('version_str', None)
@@ -147,7 +147,7 @@ class AcconeerSensorDataCollection:
                 return True
                 
             except Exception:
-                print('>> Could not connect to sensor, please check the physical connection / free up the port.')
+                print(f'>> Could not connect to sensor on {port}, please check the physical connection / free up the port.')
             
     
     def disconnect_sensor(self, verbose=True):

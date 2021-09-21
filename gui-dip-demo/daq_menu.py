@@ -64,7 +64,7 @@ class DataAcquisiton:
         self.discard_b['state'] = DISABLED
         self.stop_b['state'] = DISABLED
 
-    def autoconnect(self, *args):
+    def autoconnect(self):
         if self.radar.connection_state:
             self.radar.disconnect_sensor()
         port = self.radar.autoconnect_serial_port()
@@ -103,7 +103,7 @@ class DataAcquisiton:
         filename = self.filename_val.get()
         self.radar.save_data(npy_filename=f'{filename[:-4]}-{str(self.sample_counter).zfill(2)}.npy')
 
-    def start(self, *args):
+    def start(self):
         try:
             if self.filename_val.get() in ['*.npy', '.npy', ''] or self.filename_val.get()[-4:] != '.npy':
                 self.log_label['text'] = f'Please enter a valid filename!'
@@ -123,19 +123,19 @@ class DataAcquisiton:
             self.log_label['text'] = f'Failed to start session!'
             self.start_b['state'] = NORMAL
             
-    def next(self, *args):
+    def next(self):
         self.next_b['state'] = DISABLED
         self.discard_b['state'] = DISABLED
         self.stop_b['state'] = DISABLED
         Thread(target=self.record).start()
         self.save_file()
 
-    def discard(self, *args):
+    def discard(self):
         self.update_counter(increment=False)
         self.discard_b['state'] = DISABLED
         self.log_label['text'] = f'Recording discarded!'
 
-    def stop(self, *args):
+    def stop(self):
         self.save_file()
         self.radar.stop_session()
         self.start_b['state'] = NORMAL
