@@ -14,6 +14,7 @@ class DataAcquisiton:
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
         self.create_widgets(mainframe)
+        self.init_states()
 
     def create_widgets(self, mainframe):
         filename = StringVar()
@@ -51,9 +52,19 @@ class DataAcquisiton:
         filename_entry.focus()
         root.bind("<Return>", self.filename)    
 
+    def init_states(self):
+        self.start_b['state'] = DISABLED
+        self.next_b['state'] = DISABLED
+        self.discard_b['state'] = DISABLED
+        self.stop_b['state'] = DISABLED
+
     def autoconnect(self, *args):
         port = radar.autodetect_serial_port()
         radar.connect_sensor(port)
+        self.start_b['state'] = NORMAL
+        self.next_b['state'] = NORMAL
+        self.discard_b['state'] = NORMAL
+        self.stop_b['state'] = NORMAL
         print("Autoconnect")
 
     def start(self, *args):
