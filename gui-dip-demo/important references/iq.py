@@ -26,7 +26,7 @@ def main():
     sensor_config = get_sensor_config()
     processing_config = get_processing_config()
     sensor_config.sensor = args.sensors
-    print(sensor_config)
+    
     session_info = client.setup_session(sensor_config)
 
     pg_updater = PGUpdater(sensor_config, processing_config, session_info)

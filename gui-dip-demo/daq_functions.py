@@ -180,6 +180,8 @@ class AcconeerSensorDataCollection:
                 self.client.start_session()
                 self.session_state = True
                 print('>> Session started!')
+                self.depths = utils.get_range_depths(self.__sensor_config, self.session_info)
+                self.Ndepths = self.depths.size
             except Exception:
                 print('>> Session failed to start!')
 
@@ -207,8 +209,11 @@ class AcconeerSensorDataCollection:
     def get_data(self):
 
         if not self.check_connection_state(): return
-
-        return self.client.get_next()
+        self.data = np.zeros([self.Nframes, self.Ndepths], dtype='complex')
+        for frame in range(self.Nframes):
+            self.data[frame, :] = self.client.get_next()[1]
+        
+        return self.data
 
 
 
@@ -218,4 +223,4 @@ if __name__ == '__main__':
     port = radar.autodetect_serial_port()
     radar.connect_sensor(port)
     radar.start_session()
-    print(radar.get_config_dict(), end='\n\n')
+    
