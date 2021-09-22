@@ -26,9 +26,9 @@
 
 ## Key Dates
 - [x] Week 4: Deadline for *Project Charter*
-- [] Week 13: Deadline for *Project Report*
-- [] Week 13: Deadline for *Peer Review*
-- [] Week 14: *DIP Competition*
+- [ ] Week 13: Deadline for *Project Report*
+- [ ] Week 13: Deadline for *Peer Review*
+- [ ] Week 14: *DIP Competition*
 
 <br>
 
