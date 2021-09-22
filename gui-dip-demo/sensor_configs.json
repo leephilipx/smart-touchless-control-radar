@@ -5,5 +5,5 @@
     "profile": "PROFILE_2",
     "range_max": 0.6,
     "range_min": 0.3,
-    "update_rate": 80
+    "update_rate": 30
   }
