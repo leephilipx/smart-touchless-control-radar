@@ -53,6 +53,7 @@ i = 1
 for ds_cnt, ds in enumerate(datasets):
     # preprocess dataset, split into training and test part
     X, y = ds
+    print(ds[0])
     X = StandardScaler().fit_transform(X)
     X_train, X_test, y_train, y_test = \
         train_test_split(X, y, test_size=.4, random_state=42)
