@@ -8,6 +8,8 @@
 - Laboratory: Media Technology Lab (Loc: S2.2-B4-02)
 - Group Members: Philip, Yi Wen (A), Wai Yeong (A), Davis (B), Jun De (B)
 
+<br>
+
 ## Useful Links
 - https://blogs.ntu.edu.sg/ee3080-2122s1-e047/
 - https://ts.ntu.edu.sg/sites/intranet/cs/eee/UGProg/FTUGProg/dip/Pages/dipIntro.aspx
@@ -24,20 +26,25 @@
 
 ## Key Dates
 - [x] Week 4: Deadline for *Project Charter*
-- Week 13: Deadline for *Project Report*, *Peer Review*
-- Week 14: *DIP Competition*
+- [] Week 13: Deadline for *Project Report*
+- [] Week 13: Deadline for *Peer Review*
+- [] Week 14: *DIP Competition*
 
 <br>
 
 ## GUI for Data Collection
- - `gui-dip-demo/daq_menu_v1.py` is a Python script developed by Philip and Wai Yeong via Tkinter and Acconeer SDK to assist in automating the process of recording and saving radar data in IQ format.  
+ - `gui-dip-demo/daq_menu_v1.py` is a Python script developed by Philip and Wai Yeong via *Tkinter* and *Acconeer SDK* to assist in automating the process of recording and saving radar data in IQ format.  
      
    <img src="./admin-files/weekly_updates/Week 7 Data Collection GUI.png" height="400px"/>  
 
  - Sample commands:&nbsp;&nbsp;`python daq_menu_v1.py`,&nbsp;&nbsp;`python daq_menu_v1.py -l`,&nbsp;&nbsp;`python daq_menu_v1.py -p COM3`, `python daq_menu_v1.py -c xb112_config.json`
 ```
+usage: daq_menu_v1.py [-h] [-p P] [-l] [-c C]
+
+DIP E047 - GUI for Data Collection
+
 optional arguments:
-  -h, --help            Show this help message and exit
+  -h, --help            show this help message and exit
   -p P, --p P, -port P, --port P
                         Manually specify COM port for serial connection
   -l, --l, -list, --list
