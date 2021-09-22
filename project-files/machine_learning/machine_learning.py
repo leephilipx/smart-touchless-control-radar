@@ -47,7 +47,6 @@ datasets = [make_moons(noise=0.3, random_state=0),
             make_circles(noise=0.2, factor=0.5, random_state=1),
             linearly_separable
             ]
-
 figure = plt.figure(figsize=(27, 9))
 i = 1
 # iterate over datasets
