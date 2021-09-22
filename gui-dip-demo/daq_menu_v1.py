@@ -150,7 +150,8 @@ class DataAcquisiton:
         self.log_label['text'] = f'Recording discarded!'
 
     def stop(self):
-        self.save_file()
+        if self.discard_b['state'] == NORMAL:
+            self.save_file()
         self.radar.stop_session()
         self.start_b['state'] = NORMAL
         self.next_b['state'] = DISABLED
