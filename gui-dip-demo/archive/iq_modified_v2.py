@@ -8,35 +8,24 @@ from acconeer.exptool import clients, configs, utils
 from acconeer.exptool.pg_process import PGProccessDiedException, PGProcess
 from acconeer.exptool.structs import configbase
 
+from daq_functions import AcconeerSensorDataCollection
 
-def main():
-    args = utils.ExampleArgumentParser().parse_args()
-    utils.config_logging(args)
 
-    if args.socket_addr:
-        client = clients.SocketClient(args.socket_addr)
-    elif args.spi:
-        client = clients.SPIClient()
-    else:
-        port = args.serial_port or utils.autodetect_serial_port()
-        client = clients.UARTClient(port)
+def main(sensor_config):
 
+    port = utils.autodetect_serial_port()
+    client = clients.UARTClient(port)
     client.squeeze = False
 
-    sensor_config = get_sensor_config()
     processing_config = get_processing_config()
-    sensor_config.sensor = args.sensors
     
     session_info = client.setup_session(sensor_config)
-
     pg_updater = PGUpdater(sensor_config, processing_config, session_info)
     pg_process = PGProcess(pg_updater)
     pg_process.start()
-
     client.start_session()
 
     interrupt_handler = utils.ExampleInterruptHandler()
-    print("Press Ctrl-C to end session")
 
     processor = Processor(sensor_config, processing_config, session_info)
 
@@ -53,13 +42,6 @@ def main():
     print("Disconnecting...")
     pg_process.close()
     client.disconnect()
-
-
-def get_sensor_config():
-    config = configs.IQServiceConfig()
-    config.range_interval = [0.2, 0.8]
-    config.update_rate = 30
-    return config
 
 
 class ProcessingConfig(configbase.ProcessingConfig):
@@ -137,38 +119,6 @@ class PGUpdater:
         self.smooth_max = utils.SmoothMax(sensor_config.update_rate)
 
     def setup(self, win):
-        num_sensors = len(self.sensor_config.sensor)
-
-        self.ampl_plot = win.addPlot(row=0, col=0, colspan=num_sensors)
-        self.ampl_plot.setMenuEnabled(False)
-        self.ampl_plot.setMouseEnabled(x=False, y=False)
-        self.ampl_plot.hideButtons()
-        self.ampl_plot.showGrid(x=True, y=True)
-        self.ampl_plot.setLabel("bottom", "Depth (m)")
-        self.ampl_plot.setLabel("left", "Amplitude")
-        self.ampl_plot.setXRange(*self.depths.take((0, -1)))
-        self.ampl_plot.addLegend(offset=(-10, 10))
-
-        self.phase_plot = win.addPlot(row=1, col=0, colspan=num_sensors)
-        self.phase_plot.setMenuEnabled(False)
-        self.phase_plot.setMouseEnabled(x=False, y=False)
-        self.phase_plot.hideButtons()
-        self.phase_plot.showGrid(x=True, y=True)
-        self.phase_plot.setLabel("bottom", "Depth (m)")
-        self.phase_plot.setLabel("left", "Phase")
-        self.phase_plot.setXRange(*self.depths.take((0, -1)))
-        self.phase_plot.setYRange(-np.pi, np.pi)
-        self.phase_plot.getAxis("left").setTicks(utils.pg_phase_ticks)
-
-        self.ampl_curves = []
-        self.phase_curves = []
-        for i, sensor_id in enumerate(self.sensor_config.sensor):
-            legend = "Sensor {}".format(sensor_id)
-            pen = utils.pg_pen_cycler(i)
-            ampl_curve = self.ampl_plot.plot(pen=pen, name=legend)
-            phase_curve = self.phase_plot.plot(pen=pen)
-            self.ampl_curves.append(ampl_curve)
-            self.phase_curves.append(phase_curve)
 
         rate = self.sensor_config.update_rate
         xlabel = "Sweeps" if rate is None else "Time (s)"
@@ -200,22 +150,13 @@ class PGUpdater:
             self.history_ims.append(im)
 
     def update(self, d):
-        sweeps = d["data"]
         histories = np.abs(d["history"])
-
-        ampls = np.abs(sweeps)
-
         for i, _ in enumerate(self.sensor_config.sensor):
-            self.ampl_curves[i].setData(self.depths, ampls[i])
-            self.phase_curves[i].setData(self.depths, np.angle(sweeps[i]))
-
             im = self.history_ims[i]
             history = histories[:, i]
             im.updateImage(history, levels=(0, 1.05 * history.max()))
 
-        m = self.smooth_max.update(ampls)
-        self.ampl_plot.setYRange(0, m)
-
 
 if __name__ == "__main__":
-    main()
+    radar = AcconeerSensorDataCollection()
+    main(radar.sensor_config)
