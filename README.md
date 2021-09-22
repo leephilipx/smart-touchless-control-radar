@@ -8,21 +8,44 @@
 - Laboratory: Media Technology Lab (Loc: S2.2-B4-02)
 - Group Members: Philip, Yi Wen (A), Wai Yeong (A), Davis (B), Jun De (B)
 
+## Useful Links
+- https://blogs.ntu.edu.sg/ee3080-2122s1-e047/
+- https://ts.ntu.edu.sg/sites/intranet/cs/eee/UGProg/FTUGProg/dip/Pages/dipIntro.aspx
+- https://acconeer-python-exploration.readthedocs.io/en/latest/index.html
+
 <br>
 
 ## Folder Structure
 - Folders with the prefix `acconeer` are sample/setup references files.
-- `admin-files` contains files relating to the management aspect of the project.
+- `admin-files` contains files relating to the management aspect of the project. Latest update can be found in ```admin-files/weekly_updates/E047_WeeklyUpdate6_20210920.pptx```
 - `project-files` contains actual scripts used by the different subgroups or provided by our supervisor.
 
 <br>
 
 ## Key Dates
-- Week 4: Deadline for *Project Charter*
+- [x] Week 4: Deadline for *Project Charter*
 - Week 13: Deadline for *Project Report*, *Peer Review*
 - Week 14: *DIP Competition*
 
 <br>
 
-## Coming Soon
-The *readme* will be updated more as the project advances.
+## GUI for Data Collection
+ - `gui-dip-demo/daq_menu_v1.py` is a Python script developed by Philip and Wai Yeong via Tkinter and Acconeer SDK to assist in automating the process of recording and saving radar data in IQ format.  
+     
+   <img src="./admin-files/weekly_updates/Week 7 Data Collection GUI.png" height="400px"/>  
+
+ - Sample commands:&nbsp;&nbsp;`python daq_menu_v1.py`,&nbsp;&nbsp;`python daq_menu_v1.py -l`,&nbsp;&nbsp;`python daq_menu_v1.py -p COM3`, `python daq_menu_v1.py -c xb112_config.json`
+```
+optional arguments:
+  -h, --help            Show this help message and exit
+  -p P, --p P, -port P, --port P
+                        Manually specify COM port for serial connection
+  -l, --l, -list, --list
+                        Lists available serial ports
+  -c C, --c C, -config C, --config C
+                        Manually specify config file path, accepts a json file
+```
+
+<br>
+
+#### The *readme* will be updated more as the project advances.

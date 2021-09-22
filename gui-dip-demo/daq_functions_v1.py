@@ -13,13 +13,14 @@ class AcconeerSensorDataCollection:
     • Obtain data via IQ mode and save it to a .npy file
     '''
 
-    def __init__(self, method, Nframes, config_path='sensor_configs.json'):
+    def __init__(self, method, Nframes, config_path='sensor_configs.json', port=None):
 
         self.connection_state = False
         self.session_state = False
         self.method = method
         self.Nframes = Nframes
         self.__sensor_config = self.get_config(config_path)
+        self.port = port
 
 
     def get_config(self, config_path):
@@ -45,8 +46,9 @@ class AcconeerSensorDataCollection:
         power_save_mode ................... ACTIVE
         asynchronous_measurement .......... True
         '''
-
+        
         try:
+            config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_path)
             with open(config_path, 'r') as f:
                 ext_dict = loads(f.read())
             config = configs.IQServiceConfig()
@@ -123,13 +125,17 @@ class AcconeerSensorDataCollection:
 
 
     def autoconnect_serial_port(self):
-        ports = self.list_serial_ports()
-        for port in ports[::-1]:
-            try:
-                if self.connect_sensor(port):
-                    return port
-            except Exception:
-                pass
+        if self.port is not None:
+            if self.connect_sensor(self.port):
+                return self.port
+        else:
+            ports = self.list_serial_ports()
+            for port in ports[::-1]:
+                try:
+                    if self.connect_sensor(port):
+                        return port
+                except Exception:
+                    pass
     
 
     def connect_sensor(self, port):
@@ -235,9 +241,10 @@ class AcconeerSensorDataCollection:
 
     def save_data(self, npy_filename):
 
-        if not os.path.isdir('recordings'):
-            os.makedirs('recordings')
-        npy_filename = (os.path.join('recordings', npy_filename)).lower()
+        recordings_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'recordings')
+        if not os.path.isdir(recordings_path):
+            os.makedirs(recordings_path)
+        npy_filename = (os.path.join(recordings_path, npy_filename)).lower()
         np.save(npy_filename, self.data)
         print(f'>> Data saved to {npy_filename}')
 

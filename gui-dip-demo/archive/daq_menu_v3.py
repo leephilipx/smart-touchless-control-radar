@@ -4,11 +4,42 @@ import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
 
-from acconeer.exptool import clients, configs, utils
+from acconeer.exptool import clients, utils
 from acconeer.exptool.pg_process import PGProccessDiedException, PGProcess
 from acconeer.exptool.structs import configbase
 
-from daq_functions import AcconeerSensorDataCollection
+from daq_functions_v3 import AcconeerSensorDataCollection
+
+
+def main(sensor_config):
+    
+    port = utils.autodetect_serial_port()
+    client = clients.UARTClient(port)
+    client.squeeze = False
+
+    session_info = client.setup_session(sensor_config)
+    processing_config = get_processing_config()
+    pg_updater = PGUpdater(sensor_config, processing_config, session_info)
+    pg_process = PGProcess(pg_updater)
+    pg_process.start()
+    client.start_session()
+
+    interrupt_handler = utils.ExampleInterruptHandler()
+    processor = Processor(sensor_config, processing_config, session_info)
+
+    while not interrupt_handler.got_signal:
+        info, data = client.get_next()
+        plot_data = processor.process(data, info)
+
+        if plot_data is not None:
+            try:
+                pg_process.put_data(plot_data)
+            except PGProccessDiedException:
+                break
+
+    print("Disconnecting...")
+    pg_process.close()
+    client.disconnect()
 
 
 class ProcessingConfig(configbase.ProcessingConfig):
@@ -77,6 +108,7 @@ class Processor:
 
 
 class PGUpdater:
+    
     def __init__(self, sensor_config, processing_config, session_info):
         self.sensor_config = sensor_config
         self.processing_config = processing_config
@@ -130,7 +162,7 @@ class PGUpdater:
         btnStop = QtGui.QPushButton("Stop", win)
         btnStop.clicked.connect(self.btn_stop)
         btnStop.move(400,0)
-        self.txtFilename = QtGui.QPlainTextEdit("*.npy", win)
+        self.txtFilename = QtGui.QPlainTextEdit("b*.npy", win)
         self.txtFilename.move(500, 0)
         self.txtFilename.resize(150, 25)
 
@@ -144,16 +176,9 @@ class PGUpdater:
         except:
             log = f'Please enter a valid filename!'
             print(log)
-
-        # while not interrupt_handler.got_signal:
-#     info, data = client.get_next()
-#     plot_data = processor.process(data, info)
-
-#     if plot_data is not None:
-#         try:
-#             pg_process.put_data(plot_data)
-#         except PGProccessDiedException:
-#             break
+            return
+        log = f'Starting a session ...'
+        print(log)
 
 
     def btn_next(self):
@@ -176,28 +201,8 @@ class PGUpdater:
             im.updateImage(history, levels=(0, 1.05 * history.max()))
 
 
-radar = AcconeerSensorDataCollection()
 
-port = utils.autodetect_serial_port()
-client = clients.UARTClient(port)
-client.squeeze = False
-
-processing_config = get_processing_config()
-
-session_info = client.setup_session(radar.sensor_config)
-pg_updater = PGUpdater(radar.sensor_config, processing_config, session_info)
-pg_process = PGProcess(pg_updater)
-pg_process.start()
-client.start_session()
-
-interrupt_handler = utils.ExampleInterruptHandler()
-
-processor = Processor(radar.sensor_config, processing_config, session_info)
-
-while True:
-    pass
-
-
-# print("Disconnecting...")
-# pg_process.close()
-# client.disconnect()
+if __name__ == "__main__":
+    
+    radar = AcconeerSensorDataCollection()
+    main(radar.sensor_config)

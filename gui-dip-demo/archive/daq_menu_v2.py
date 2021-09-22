@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-from daq_functions import AcconeerSensorDataCollection
+from daq_functions_v2 import AcconeerSensorDataCollection
 from threading import Thread
 from multiprocessing import Process
 import warnings

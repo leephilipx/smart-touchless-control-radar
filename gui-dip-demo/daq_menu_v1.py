@@ -1,22 +1,20 @@
 from tkinter import *
 from tkinter import ttk
-from daq_functions import AcconeerSensorDataCollection
+from daq_functions_v1 import AcconeerSensorDataCollection
 from threading import Thread
-import numpy as np
-import time
+import argparse
 
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import (
-    FigureCanvasTkAgg, NavigationToolbar2Tk)
+# import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 
 class DataAcquisiton:
 
-    def __init__(self, root, method, Nframes, config_path):
-        self.radar = AcconeerSensorDataCollection(method=method, Nframes=Nframes, config_path=config_path)
+    def __init__(self, root, method, Nframes, config_path, port=None):
+        self.radar = AcconeerSensorDataCollection(method=method, Nframes=Nframes, config_path=config_path, port=port)
         self.config_dict = self.radar.get_config_dict()
         self.sample_counter = 0
-        root.title("Data Collection GUI - DIP E047")
+        root.title("Data Collection GUI - DIP E047 v1.0")
         mainframe = ttk.Frame(root, padding="12 12 12 12")
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
         root.columnconfigure(0, weight=1)
@@ -44,7 +42,7 @@ class DataAcquisiton:
         self.filename_l = ttk.Label(mainframe, text="Filename (*.npy): ")
         self.filename_l.grid(row=4, column=1, sticky=(W))
         self.filename_val = StringVar()
-        self.filename_val.set("gg.npy")
+        self.filename_val.set("*.npy")
         self.filename_entry = ttk.Entry(mainframe, textvariable=self.filename_val)
         self.filename_entry.grid(row=4, column=2, columnspan=2, sticky=(E,W))
         self.counter_l = ttk.Label(mainframe, text="Count = 0", foreground="blue")
@@ -131,18 +129,20 @@ class DataAcquisiton:
         self.next_b['state'] = DISABLED
         self.discard_b['state'] = DISABLED
         self.stop_b['state'] = DISABLED
+        self.connect_b['state'] = DISABLED
         if self.radar.start_session():
             Thread(target=self.record).start()
         else:
             self.log_label['text'] = f'Failed to start session!'
             self.start_b['state'] = NORMAL
+            self.connect_b['state'] = NORMAL
             
     def next(self):
+        self.save_file()
         self.next_b['state'] = DISABLED
         self.discard_b['state'] = DISABLED
         self.stop_b['state'] = DISABLED
         Thread(target=self.record).start()
-        self.save_file()
 
     def discard(self):
         self.update_counter(increment=False)
@@ -156,7 +156,12 @@ class DataAcquisiton:
         self.next_b['state'] = DISABLED
         self.discard_b['state'] = DISABLED
         self.stop_b['state'] = DISABLED
+        self.connect_b['state'] = NORMAL
         self.log_label['text'] = f'Recording ended!'
+        self.filename_entry['state'] = NORMAL
+        self.filename_val.set("*.npy")
+        self.sample_counter = 0
+        
 
     # def plot_mag(self):
     #     self.ax.imshow(data, aspect='auto', origin='lower')
@@ -167,6 +172,20 @@ class DataAcquisiton:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='DIP E047 - GUI for Data Collection')
+    parser.add_argument('-p', '--p', '-port', '--port', type=str, help='Manually specify COM port for serial connection')
+    parser.add_argument('-l', '--l', '-list', '--list', action='store_true', help='Lists available serial ports')
+    parser.add_argument('-c', '--c', '-config', '--config', type=str, help='Manually specify config file path, accepts a json file')
+    args = parser.parse_args()
+
+    if args.l:
+        print('>> Avaliable ports:', AcconeerSensorDataCollection(method='serial', Nframes=128).list_serial_ports())
+        from sys import exit
+        exit()
+
+    config_path = 'sensor_configs.json'
+    if args.c is not None: config_path = args.c
+
     root = Tk()
-    DataAcquisiton(root, method='serial', Nframes=128, config_path='sensor_configs.json')
+    DataAcquisiton(root, method='serial', Nframes=128, config_path=config_path, port=args.p)
     root.mainloop()
