@@ -1,13 +1,11 @@
 from tkinter import *
 from tkinter import ttk, filedialog, simpledialog
-from threading import Thread
-import argparse
-import h5py, os
+from argparse import ArgumentParser
+from os import path
+from h5py import File
 import numpy as np
-from tkinter import filedialog
-
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class DataAcquisiton:
@@ -17,7 +15,7 @@ class DataAcquisiton:
         self.extracted_count = 0
         self.extracted_samples = []
         self.rangeList = np.arange(range[0], range[1]+1, 10)
-        root.title("Samples Extractor - DIP E047 v1.0")
+        root.title("Gesture Extractor GUI - DIP E047 v1.0")
         mainframe = ttk.Frame(root, padding="12 12 12 12")
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
         root.columnconfigure(0, weight=1)
@@ -29,7 +27,7 @@ class DataAcquisiton:
         # ---------
         self.file_button = ttk.Button(mainframe, text="Load h5 file", command=self.get_file)
         self.file_button.grid(row=1, column=1, sticky=(E,W))
-        self.info_label = ttk.Label(mainframe, text="<-- Please load a h5 file!", foreground="red")
+        self.info_label = ttk.Label(mainframe, text="  Please load a h5 file!", foreground="red")
         self.info_label.grid(row=1, column=2, columnspan=2, sticky=(E,W))
         self.extract_button = ttk.Button(mainframe, text="Extract sample", command=self.extract_sample)
         self.extract_button.grid(row=1, column=4, columnspan=1, sticky=(E,W))
@@ -103,14 +101,14 @@ class DataAcquisiton:
         if len(self.h5_path) and self.h5_path.endswith('.h5'):
             self.read_file()
             self.plot_mag()
-            self.info_label['text'] = f'  {os.path.basename(self.h5_path)} loaded!'
+            self.info_label['text'] = f'  {path.basename(self.h5_path)} loaded!'
         else:
             self.info_label['text'] = '  Unsuccessful, please try again!'
 
     def read_file(self, *args):
         self.frame_start = 0
         self.plot_Nframes = 3 * self.Nframes
-        hf = h5py.File(self.h5_path, 'r')
+        hf = File(self.h5_path, 'r')
         self.data = np.squeeze(np.array(hf['/data']))
         self.total_frames, self.NTS = self.data.shape
         self.normalised_data = np.abs(self.data).T
@@ -171,8 +169,8 @@ class DataAcquisiton:
                     if ind != -1: filename = filename[:ind]
                     try:
                         for cnt in range(self.extracted_count):
-                            np.save(os.path.join(save_dir, f'{filename}-{str(cnt).zfill(3)}.npy'), self.extracted_samples[cnt])
-                        self.info_label['text'] = f"  {self.extracted_count} sample{'' if self.extracted_count == 1 else 's'} saved to {os.path.basename(save_dir)}!"
+                            np.save(path.join(save_dir, f'{filename}-{str(cnt).zfill(3)}.npy'), self.extracted_samples[cnt])
+                        self.info_label['text'] = f"  {self.extracted_count} sample{'' if self.extracted_count == 1 else 's'} saved to {path.basename(save_dir)}!"
                     except:
                         self.info_label['text'] = '  An error has occured!'
                 else:
@@ -183,20 +181,8 @@ class DataAcquisiton:
 
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(description='DIP E047 - GUI for Data Collection')
-    # parser.add_argument('-p', '--p', '-port', '--port', type=str, help='Manually specify COM port for serial connection')
-    # parser.add_argument('-l', '--l', '-list', '--list', action='store_true', help='Lists available serial ports')
-    # parser.add_argument('-c', '--c', '-config', '--config', type=str, help='Manually specify config file path, accepts a json file')
-    # args = parser.parse_args()
-
-    # if args.l:
-    #     print('>> Avaliable ports:', AcconeerSensorDataCollection(method='serial', Nframes=128).list_serial_ports())
-    #     from sys import exit
-    #     exit()
-
-    # config_path = 'sensor_configs.json'
-    # if args.c is not None: config_path = args.c
-
+    parser = ArgumentParser(description='DIP E047 - GUI for Gesture Extraction')
+    args = parser.parse_args()
     root = Tk()
     DataAcquisiton(root, range=[30,60])
     root.mainloop()
