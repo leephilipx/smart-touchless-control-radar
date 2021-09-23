@@ -137,7 +137,7 @@ class DataAcquisiton:
         self.ax.set_xlabel(f'Frame {self.frame_start+1} to {self.frame_start+self.Nframes}')
         self.ax.set_ylabel('Range (cm)')
         self.ax.set_xticks(self.xticks)
-        self.ax.set_xticklabels(self.xticks+self.frame_start-self.Nframes)
+        self.ax.set_xticklabels(self.xticks+self.frame_start-self.Nframes+1)
         self.ax.set_yticks(self.yticks)
         self.ax.set_yticklabels(self.rangeList)
         plt.tight_layout()
