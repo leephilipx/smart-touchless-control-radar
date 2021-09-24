@@ -22,6 +22,7 @@ class DataAcquisiton:
         root.rowconfigure(0, weight=1)
         self.create_widgets(mainframe)
         self.init_states()
+        self.get_file()
 
     def create_widgets(self, mainframe):
         # ---------
@@ -80,12 +81,16 @@ class DataAcquisiton:
     def update_button(self, *args):
         try:
             self.Nframes = self.Nframes_val.get()
+            assert self.Nframes != 0
+            self.info_label['text'] = f'  Frame size set to {self.Nframes}!'
         except:
             self.Nframes = 64
+            self.Nframes_val.set(self.Nframes)
+            self.info_label['text'] = f'  Frame size set to default of {self.Nframes}!'
         if self.Nframes > self.total_frames:
             self.Nframes = self.total_frames
             self.Nframes_val.set(self.total_frames)
-            self.info_label['text'] = f'  Max frames set to {self.total_frames}!'
+            self.info_label['text'] = f'  Frame size capped at a max of {self.total_frames}!'
         self.read_file()
         self.increment_N_button['text'] = f'+ {self.Nframes}'
         self.decrement_N_button['text'] = f'- {self.Nframes}'
@@ -169,7 +174,7 @@ class DataAcquisiton:
                     if ind != -1: filename = filename[:ind]
                     try:
                         for cnt in range(self.extracted_count):
-                            np.save(path.join(save_dir, f'{filename}-{str(cnt).zfill(3)}.npy'), self.extracted_samples[cnt])
+                            np.savez_compressed(path.join(save_dir, f'{filename}-{str(cnt).zfill(3)}.npz'), sample=self.extracted_samples[cnt])
                         self.info_label['text'] = f"  {self.extracted_count} sample{'' if self.extracted_count == 1 else 's'} saved to {path.basename(save_dir)}!"
                     except:
                         self.info_label['text'] = '  An error has occured!'
