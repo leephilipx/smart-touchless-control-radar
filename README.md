@@ -33,11 +33,12 @@
 <br>
 
 ## GUI for Gesture Extraction
- - `gui-dip-demo/gesture_extractor_gui.py` or ` is a Python script developed by Philip to automate the process of extracting gesture samples from a continous recording from the GUI tool provided by Acconeer. This solves the alignment issue faced when recording one sample at a time.
- - It then saves the samples in `.npz` format with the intention of a small file size. To read data from these new files, please use `np.load('filename-000.npz')['sample']`.
- - For ease of running the tool, an alternative Windows executable file `gui-dip-demo/gesture_extractor_gui.exe` can be used too.  
+ - `gui-dip-demo/gesture_extractor_gui.py` is a Python script developed by Philip to automate the process of extracting gesture samples from a continous recording obtained from the GUI tool provided by Acconeer. This fixes the alignment issue faced when recording one sample at a time.
+ - The tool saves extracted samples in `.npz` format with the intention of a small file size.  
+   To read data from these new files, please use `np.load('filename-000.npz')['sample']`, where *filename* is a placeholder.
+ - For ease of running the tool, an alternative Windows executable file `gui-dip-demo/gesture_extractor_gui.exe` is available too.  
      
-   <img src="./admin-files/weekly_updates/Week 7 Gesture Extractor GUI.png" height="250px"/>  
+   <img src="./admin-files/weekly_updates/Week 7 Gesture Extractor GUI Tool.png" height="250px"/>  
 
  - Sample commands:&nbsp;&nbsp;`python gesture_extractor_gui.py`
 ```
@@ -51,10 +52,10 @@ optional arguments:
 
 <br>
 
-## GUI for Data Collection&nbsp;&nbsp;`needs fixing`
+## GUI for Data Collection (needs fixing)
  - `gui-dip-demo/daq_menu_v1.py` is a Python script developed by Philip and Wai Yeong via *Tkinter* and *Acconeer SDK* to assist in automating the process of recording and saving radar data in IQ format.  
      
-   <img src="./admin-files/weekly_updates/Week 7 Data Collection GUI.png" height="400px"/>  
+   <img src="./admin-files/weekly_updates/Week 7 Data Collection GUI Tool.png" height="400px"/>  
 
  - Sample commands:&nbsp;&nbsp;`python daq_menu_v1.py`,&nbsp;&nbsp;`python daq_menu_v1.py -l`,&nbsp;&nbsp;`python daq_menu_v1.py -p COM3`, `python daq_menu_v1.py -c xb112_config.json`
 ```
