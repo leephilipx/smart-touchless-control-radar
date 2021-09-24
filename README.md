@@ -34,11 +34,10 @@
 
 ## GUI for Gesture Extraction
  - `gui-dip-demo/gesture_extractor_gui.py` is a Python script developed by Philip to automate the process of extracting gesture samples from a continous recording obtained from the GUI tool provided by Acconeer. This fixes the alignment issue faced when recording one sample at a time.
- - The tool saves extracted samples in `.npz` format with the intention of a small file size.  
-   To read data from these new files, please use `np.load('filename-000.npz')['sample']`, where *filename* is a placeholder.
+ - The tool saves extracted samples in `.npz` format with the intention of a small file size. To read data from these new files, please use `np.load('filename-000.npz')['sample']`, where *filename* is a placeholder.
  - For ease of running the tool, an alternative Windows executable file `gui-dip-demo/gesture_extractor_gui.exe` is available too.  
      
-   <img src="./admin-files/weekly_updates/Week 7 Gesture Extractor GUI Tool.png" height="250px"/>  
+   <img src="./admin-files/weekly_updates/Week 7 Gesture Extractor GUI Tool.png" height="300px"/>  
 
  - Sample commands:&nbsp;&nbsp;`python gesture_extractor_gui.py`
 ```
