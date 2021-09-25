@@ -1,8 +1,9 @@
 from tkinter import *
 from tkinter import ttk, filedialog, simpledialog
 from argparse import ArgumentParser
-from os import path
 from h5py import File
+from json import loads
+from os import path
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -10,62 +11,65 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class DataAcquisiton:
 
-    def __init__(self, root, range=[30,60]):
+    def __init__(self, root):
+        self.root = root
         self.Nframes = 64
         self.extracted_count = 0
         self.extracted_samples = []
-        self.rangeList = np.arange(range[0], range[1]+1, 10)
-        root.title("Gesture Extractor GUI - DIP E047 v1.0")
-        mainframe = ttk.Frame(root, padding="12 12 12 12")
-        mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-        root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=1)
-        self.create_widgets(mainframe)
+        self.root.title("Gesture Extractor GUI - DIP E047 v1.3.1")
+        self.root.minsize(920, 420)
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
+        self.mainframe = ttk.Frame(self.root, padding="12 12 12 12")
+        self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+        self.mainframe.pack(expand=True, fill='both', anchor='center')
+        self.create_widgets()
         self.init_states()
         self.get_file()
 
-    def create_widgets(self, mainframe):
+    def create_widgets(self):
         # ---------
-        self.file_button = ttk.Button(mainframe, text="Load h5 file", command=self.get_file)
+        self.file_button = ttk.Button(self.mainframe, text="Load h5 file", command=self.get_file)
         self.file_button.grid(row=1, column=1, sticky=(E,W))
-        self.info_label = ttk.Label(mainframe, text="  Please load a h5 file!", foreground="red")
+        self.info_label = ttk.Label(self.mainframe, text="  Please load a h5 file!", foreground="red")
         self.info_label.grid(row=1, column=2, columnspan=2, sticky=(E,W))
-        self.extract_button = ttk.Button(mainframe, text="Extract sample", command=self.extract_sample)
+        self.extract_button = ttk.Button(self.mainframe, text="Extract sample", command=self.extract_sample)
         self.extract_button.grid(row=1, column=4, columnspan=1, sticky=(E,W))
-        self.save_button = ttk.Button(mainframe, text="Save all", command=self.save_samples)
+        self.save_button = ttk.Button(self.mainframe, text="Save all", command=self.save_samples)
         self.save_button.grid(row=1, column=5, columnspan=1, sticky=(E,W))
-        self.Nframes_label = ttk.Label(mainframe, text="Frame size:", foreground='blue')
+        self.Nframes_label = ttk.Label(self.mainframe, text="Frame size:", foreground='blue')
         self.Nframes_label.grid(row=1, column=6, sticky=(W))
         self.Nframes_val = IntVar()
         self.Nframes_val.set(self.Nframes)
-        self.Nframes_entry = ttk.Entry(mainframe, textvariable=self.Nframes_val, width=6)
+        self.Nframes_entry = ttk.Entry(self.mainframe, textvariable=self.Nframes_val, width=5)
         self.Nframes_entry.grid(row=1, column=6, sticky=(E))
         # ---------
-        ttk.Separator(mainframe, orient=HORIZONTAL).grid(row=2, column=1, columnspan=8, sticky=(E,W))
-        self.decrement_N_button = ttk.Button(mainframe, text=f"- {self.Nframes_val.get()}", command=lambda:self.shift_frame(-self.Nframes_val.get()))
+        ttk.Separator(self.mainframe, orient=HORIZONTAL).grid(row=2, column=1, columnspan=8, sticky=(E,W))
+        self.decrement_N_button = ttk.Button(self.mainframe, text=f"- {self.Nframes_val.get()}", command=lambda:self.shift_frame(-self.Nframes_val.get()))
         self.decrement_N_button.grid(row=3, column=1, sticky=(E,W))
-        self.decrement_five_button = ttk.Button(mainframe, text="- 5", command=lambda:self.shift_frame(-5))
+        self.decrement_five_button = ttk.Button(self.mainframe, text="- 5", command=lambda:self.shift_frame(-5))
         self.decrement_five_button.grid(row=3, column=2, sticky=(E,W))
-        self.decrement_one_button = ttk.Button(mainframe, text="- 1", command=lambda:self.shift_frame(-1))
+        self.decrement_one_button = ttk.Button(self.mainframe, text="- 1", command=lambda:self.shift_frame(-1))
         self.decrement_one_button.grid(row=3, column=3, sticky=(E,W))
-        self.increment_one_button = ttk.Button(mainframe, text="+ 1", command=lambda:self.shift_frame(1))
+        self.increment_one_button = ttk.Button(self.mainframe, text="+ 1", command=lambda:self.shift_frame(1))
         self.increment_one_button.grid(row=3, column=4, sticky=(E,W))
-        self.increment_five_button = ttk.Button(mainframe, text="+ 5", command=lambda:self.shift_frame(5))
+        self.increment_five_button = ttk.Button(self.mainframe, text="+ 5", command=lambda:self.shift_frame(5))
         self.increment_five_button.grid(row=3, column=5, sticky=(E,W))
-        self.increment_N_button = ttk.Button(mainframe, text=f"+ {self.Nframes_val.get()}", command=lambda:self.shift_frame(self.Nframes_val.get()))
+        self.increment_N_button = ttk.Button(self.mainframe, text=f"+ {self.Nframes_val.get()}", command=lambda:self.shift_frame(self.Nframes_val.get()))
         self.increment_N_button.grid(row=3, column=6, sticky=(E,W))
         # ---------
-        ttk.Separator(mainframe, orient=HORIZONTAL).grid(row=4, column=1, columnspan=6, sticky=(E,W))
-        self.frameMagPlot = ttk.Labelframe(mainframe, text='Magnitude Plot')
+        ttk.Separator(self.mainframe, orient=HORIZONTAL).grid(row=4, column=1, columnspan=6, sticky=(E,W))
+        self.frameMagPlot = ttk.Labelframe(self.mainframe, text='Magnitude Plot')
         self.frameMagPlot.grid(row=5, column=1, columnspan=6, sticky=(N,S,E,W))
         self.fig = plt.figure(figsize=(7, 2))
         self.ax = self.fig.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frameMagPlot)
         self.canvas.get_tk_widget().grid(row=6, column=1, columnspan=6, sticky=(N,S,E,W))
         # ---------
-        for child in mainframe.winfo_children():
+        for child in self.mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
         root.bind("<Key>", self.update_button)
+        self.Nframes_entry.focus()
 
     def init_states(self, *args):
         self.increment_one_button['state'] = DISABLED
@@ -84,14 +88,13 @@ class DataAcquisiton:
             assert self.Nframes != 0
             self.info_label['text'] = f'  Frame size set to {self.Nframes}!'
         except:
-            self.Nframes = 64
+            self.Nframes = 32
             self.Nframes_val.set(self.Nframes)
             self.info_label['text'] = f'  Frame size set to default of {self.Nframes}!'
         if self.Nframes > self.total_frames:
             self.Nframes = self.total_frames
             self.Nframes_val.set(self.total_frames)
             self.info_label['text'] = f'  Frame size capped at a max of {self.total_frames}!'
-        self.read_file()
         self.increment_N_button['text'] = f'+ {self.Nframes}'
         self.decrement_N_button['text'] = f'- {self.Nframes}'
         self.plot_mag()
@@ -102,36 +105,50 @@ class DataAcquisiton:
         self.ax.clear()
         self.canvas.draw_idle()
         self.init_states()
+        self.root.update_idletasks()
         self.h5_path = filedialog.askopenfilename(filetypes=[('h5 file (*.h5)', '.h5')])
         if len(self.h5_path) and self.h5_path.endswith('.h5'):
-            self.read_file()
-            self.plot_mag()
             self.info_label['text'] = f'  {path.basename(self.h5_path)} loaded!'
+            self.read_file()
         else:
             self.info_label['text'] = '  Unsuccessful, please try again!'
 
     def read_file(self, *args):
         self.frame_start = 0
-        self.plot_Nframes = 3 * self.Nframes
         hf = File(self.h5_path, 'r')
-        self.data = np.squeeze(np.array(hf['/data']))
-        self.total_frames, self.NTS = self.data.shape
-        self.normalised_data = np.abs(self.data).T
-        self.normalised_data = np.hstack([np.zeros((self.NTS, self.Nframes)), self.normalised_data/np.max(self.normalised_data), np.zeros((self.NTS, self.Nframes))])
+        try:
+            self.data = np.squeeze(np.array(hf['data']))
+            self.range_interval = [int(100*elem) for elem in loads(str(np.squeeze(np.array(hf['sensor_config_dump'])))[2:-1])['range_interval']]
+            self.total_frames, self.NTS = self.data.shape
+            if self.total_frames < 32:
+                self.info_label['text'] = f'  Insufficient frames! [Nframes={self.total_frames}]'
+                return
+            elif self.total_frames < 64:
+                self.Nframes = 32
+                self.Nframes_val.set(self.Nframes)
+                self.increment_N_button['text'] = f'+ {self.Nframes}'
+                self.decrement_N_button['text'] = f'- {self.Nframes}'
+            self.increment_one_button['state'] = NORMAL
+            self.increment_five_button['state'] = NORMAL
+            self.increment_N_button['state'] = NORMAL
+            self.decrement_one_button['state'] = NORMAL
+            self.decrement_five_button['state'] = NORMAL
+            self.decrement_N_button['state'] = NORMAL
+            self.Nframes_entry['state'] = NORMAL
+            self.extract_button['state'] = NORMAL
+            self.save_button['state'] = NORMAL
+            self.normalised_data = np.abs(self.data).T
+            self.normalised_data = np.hstack([np.zeros((self.NTS, self.Nframes)), self.normalised_data/np.max(self.normalised_data), np.zeros((self.NTS, self.Nframes))])
+            self.rangeList = np.linspace(self.range_interval[0], self.range_interval[1], 6).astype(int)
+            self.yticks = np.linspace(0, self.NTS-1, 6)
+            self.plot_mag()
+        except:
+            self.info_label['text'] = f'  Invalid h5 file, not loaded!'
         hf.close()
-        self.xticks = np.linspace(0, self.plot_Nframes-1, 4).astype(int)
-        self.yticks = np.linspace(0, self.NTS-1, self.rangeList.shape[0])
-        self.increment_one_button['state'] = NORMAL
-        self.increment_five_button['state'] = NORMAL
-        self.increment_N_button['state'] = NORMAL
-        self.decrement_one_button['state'] = NORMAL
-        self.decrement_five_button['state'] = NORMAL
-        self.decrement_N_button['state'] = NORMAL
-        self.Nframes_entry['state'] = NORMAL
-        self.extract_button['state'] = NORMAL
-        self.save_button['state'] = NORMAL
 
     def plot_mag(self, *args):
+        self.plot_Nframes = 3 * self.Nframes
+        self.xticks = np.linspace(0, self.plot_Nframes-1, 4).astype(int)
         self.ax.clear()
         self.ax.imshow(self.normalised_data[:, self.frame_start:self.frame_start+self.plot_Nframes], aspect='auto', origin='lower', vmin=0, cmap='jet')
         self.ax.axvline(self.Nframes, c='red')
@@ -163,9 +180,11 @@ class DataAcquisiton:
     def save_samples(self, *args):
         if self.extracted_count:
             self.info_label['text'] = '  Please select a directory!'
+            self.root.update_idletasks()
             save_dir = filedialog.askdirectory()
             self.info_label['text'] = '  '
             if len(save_dir):
+                self.root.update_idletasks()
                 filename = simpledialog.askstring(title='Filename (No Extension)', prompt='Please enter a filename to save your extracted samples!')
                 if filename is None: return
                 if len(filename):
@@ -189,5 +208,5 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='DIP E047 - GUI for Gesture Extraction')
     args = parser.parse_args()
     root = Tk()
-    DataAcquisiton(root, range=[30,60])
+    DataAcquisiton(root)
     root.mainloop()
