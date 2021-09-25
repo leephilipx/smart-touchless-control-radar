@@ -17,7 +17,7 @@ class DataAcquisiton:
         self.extracted_count = 0
         self.extracted_samples = []
         self.root.title("Gesture Extractor GUI - DIP E047 v1.3.1")
-        self.root.minsize(920, 420)
+        # self.root.minsize(920, 420)
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         self.mainframe = ttk.Frame(self.root, padding="12 12 12 12")
@@ -118,7 +118,11 @@ class DataAcquisiton:
         hf = File(self.h5_path, 'r')
         try:
             self.data = np.squeeze(np.array(hf['data']))
-            self.range_interval = [int(100*elem) for elem in loads(str(np.squeeze(np.array(hf['sensor_config_dump'])))[2:-1])['range_interval']]
+            try:
+                range_interval = loads(str(np.squeeze(np.array(hf['sensor_config_dump'])))[2:-1])['range_interval']
+            except:
+                range_interval = loads(str(np.squeeze(np.array(hf['sensor_config_dump']))))['range_interval']
+            self.range_interval = [int(100*item) for item in range_interval]
             self.total_frames, self.NTS = self.data.shape
             if self.total_frames < 32:
                 self.info_label['text'] = f'  Insufficient frames! [Nframes={self.total_frames}]'
@@ -185,7 +189,7 @@ class DataAcquisiton:
             self.info_label['text'] = '  '
             if len(save_dir):
                 self.root.update_idletasks()
-                filename = simpledialog.askstring(title='Filename (No Extension)', prompt='Please enter a filename to save your extracted samples!')
+                filename = simpledialog.askstring(title='Filename (no extension)', prompt='Please enter a filename to save your extracted samples!')
                 if filename is None: return
                 if len(filename):
                     filename = filename.lower()
