@@ -10,6 +10,7 @@ import scipy.io
 import matplotlib.pyplot as plt
 from scipy.fft import fft
 from scipy import signal
+from os.path import dirname, join as pjoin
 
 #import math
 #import math
@@ -33,8 +34,8 @@ Ntot = Ns*Nc*N
 #d1 = np.fromfile('IFXradardata/Distance2GoL_record_20210706-165720.raw.bin'
 #                 , dtype=np.complex64)
 #d1 = d1[-5*Fs:]
-
-mat = scipy.io.loadmat('Close1_1.mat')
+mat_fname = pjoin("./tests/data/", 'close1_1.mat')
+mat = scipy.io.loadmat(mat_fname)
 d1 = mat['d']
 
 d1 = d1.transpose()

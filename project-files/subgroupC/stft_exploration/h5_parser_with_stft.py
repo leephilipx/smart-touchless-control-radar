@@ -8,6 +8,7 @@ import numpy as np
 import h5py, json
 import matplotlib.pyplot as plt
 from scipy import signal
+from IPython import get_ipython
 
 get_ipython().run_line_magic('matplotlib', 'inline')
 
