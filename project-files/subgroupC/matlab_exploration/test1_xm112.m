@@ -10,7 +10,7 @@ Rstep  = 4.8400e-04;    % meter
 
 FrameRate = 200;
 
-filename = "xm112 (0.5m) sample.h5";
+filename = "testfile1.h5";
 info = h5info(filename);
 
 data = h5read(filename, "/data");
