@@ -16,7 +16,7 @@ class DataAcquisiton:
         self.Nframes = 64
         self.extracted_count = 0
         self.extracted_samples = []
-        self.root.title("Gesture Extractor GUI - DIP E047 v1.3.1")
+        self.root.title("Gesture Extractor GUI - DIP E047 v1.3.2")
         # self.root.minsize(920, 420)
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
@@ -85,18 +85,19 @@ class DataAcquisiton:
     def update_button(self, *args):
         try:
             self.Nframes = self.Nframes_val.get()
-            assert self.Nframes != 0
-            self.info_label['text'] = f'  Frame size set to {self.Nframes}!'
+            assert type(self.Nframes) == int
+            assert self.Nframes > 0
         except:
-            self.Nframes = 32
-            self.Nframes_val.set(self.Nframes)
-            self.info_label['text'] = f'  Frame size set to default of {self.Nframes}!'
+            self.info_label['text'] = f'  Invalid frame size!'
+            return
+        self.info_label['text'] = f'  Frame size set to {self.Nframes}!'
         if self.Nframes > self.total_frames:
             self.Nframes = self.total_frames
             self.Nframes_val.set(self.total_frames)
             self.info_label['text'] = f'  Frame size capped at a max of {self.total_frames}!'
         self.increment_N_button['text'] = f'+ {self.Nframes}'
         self.decrement_N_button['text'] = f'- {self.Nframes}'
+        self.read_file()
         self.plot_mag()
 
     def get_file(self, *args):
@@ -207,9 +208,9 @@ class DataAcquisiton:
             self.info_label['text'] = '  Please extract samples first!'
 
 
-
 if __name__ == '__main__':
-    parser = ArgumentParser(description='DIP E047 - GUI for Gesture Extraction')
+    desc = 'DIP E047 - GUI for Gesture Extraction \n Python script developed by Philip to automate the process of extracting gesture samples from a continous recording obtained from the GUI tool provided by Acconeer. This fixes the alignment issue faced when recording one sample at a time. | The tool saves extracted samples in .npz format with the intention of a small file size. To read data from these new files, please use np.load(\'filename-000.npz\')[\'sample\'], where filename is a placeholder. | For ease of running the tool, an alternative Windows executable file gui-dip-demo/gesture_extractor_gui.exe is available too.'
+    parser = ArgumentParser(description=desc)
     args = parser.parse_args()
     root = Tk()
     DataAcquisiton(root)
