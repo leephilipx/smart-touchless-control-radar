@@ -1,0 +1,7 @@
+In fact, this is possible to divide your group into 3 sub-groups on hardware, radar signal processing, machine learning to work separately at moment. 
+•	Sub-group 1 (1 student): to learn more about the hardware about various parameter settings so as to get clearer images.
+How to set parameters to get more points per sweep and how these parameters are related? 
+I noted that some data has thousands points per sweep, some hundreds, some only 64 like your provided to me about the hand gestures.
+•	Sub-group 2 (2 students):  on radar signal processing to try STFT and the attached another algorithm MFCC (a Pythorn code is also attached);
+•	Sub-group 3 (2 students): on machine learning (with PC or Rasberry Pi) using the attached 3 category of radar signature images (100 image for each category). 
+Later you can use your own radar signitue images to replace these images. The procedure is same.
