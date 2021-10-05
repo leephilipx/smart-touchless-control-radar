@@ -1,0 +1,9 @@
+{
+    "HWAAS": 10,
+    "gain": 0.5,
+    "power_save_mode": "ACTIVE",
+    "profile": "PROFILE_2",
+    "range_max": 0.6,
+    "range_min": 0.3,
+    "update_rate": 30
+  }
