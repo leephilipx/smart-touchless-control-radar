@@ -5,3 +5,12 @@ I noted that some data has thousands points per sweep, some hundreds, some only 
 •	Sub-group 2 (2 students):  on radar signal processing to try STFT and the attached another algorithm MFCC (a Pythorn code is also attached);
 •	Sub-group 3 (2 students): on machine learning (with PC or Rasberry Pi) using the attached 3 category of radar signature images (100 image for each category). 
 Later you can use your own radar signitue images to replace these images. The procedure is same.
+
+------------------------------------------------------------------------------------
+
+For MFCC, stereo audio is equivalent to complex signals (left and right channels). 
+The sample code is to process single channel data and you may just use real channel data of a complex data.
+In fact, one of the Acconeer sensor XE132 bought by my other student only provide real data.
+MFCC may be better applied to that sensor.
+
+For complex data, you may classify gestures based on both STFT and MFCC results to enhance reliability.
