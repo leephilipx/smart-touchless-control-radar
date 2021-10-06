@@ -1,7 +1,0 @@
-XM112 High Performance Module
-- Hardware acceleration average samples = 10
-- Range = 0.3 m to 0.6 m
-- Number of data points (NTS) = 621
-- Update rate = 30 Hz
-- Number of frames = 64 frames
-- Time taken = ~ 2 s
