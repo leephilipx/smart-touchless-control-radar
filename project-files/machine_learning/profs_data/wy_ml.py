@@ -4,6 +4,12 @@ import pandas as pd
 import seaborn as sns
 import joblib
 import os
+import tensorflow as tf
+import tensorflow.keras as k
+import sklearn as sk
+import pickle
+from read_images import read_prof_images, read_our_radar_data
+from sklearn.model_selection import train_test_split
 from read_images import read_prof_images
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -47,24 +53,42 @@ def ml(classifier, ttsData, classifier_name):
     print("Predcited values: ", model.predict(X_test))
     print("Actual values:    ", y_test)
 
+def dl():
+    X_train, X_test, y_train, y_test = ttsData
+    y_train = tf.one_hot(y_train, y.shape[0])
+    y_test = tf.one_hot(y_test, y.shape[0])
+
+    model=k.Sequential()
+    model.add(tf.keras.Input(shape=X.shape[1:]))
+    model.add(k.layers.Conv2D(32,3,3,padding='valid',
+        dilation_rate=(1, 1),
+        activation="relu"))
+    model.add(k.layers.Flatten())
+    model.add(k.layers.Dense(64,activation="relu"))
+    model.add(k.layers.Dense(64,activation="relu"))
+    model.add(k.layers.Dense(64,activation="relu"))
+    model.add(k.layers.Dense(y.shape[0],activation="softmax"))
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.summary()
+    history = model.fit(X_train,y_train,epochs=50,batch_size=8)
+
 if __name__ == "__main__":
     os.chdir(os.path.dirname(__file__))
     X, y, class_labels = read_prof_images()
     X = X.reshape(-1, 256*256*3)
     ttsData = train_test_split(X, y, test_size=.3, random_state=12) 
     # print(X.shape, y.shape, class_labels)
-    ml(KNeighborsClassifier(3), ttsData, "Nearest Neighbors")
-
-    # SVC(kernel="linear", C=0.025),
-    # OneVsOneClassifier(SVC(gamma=0.7, C=1)),
-    # GaussianProcessClassifier(1.0 * RBF(1.0)),
-    # DecisionTreeClassifier(max_depth=5),
-    # RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-    # MLPClassifier(alpha=1, max_iter=1000),
-    # AdaBoostClassifier(),
-    # GaussianNB(),
-    # QuadraticDiscriminantAnalysis()])
-    
+    # ml(KNeighborsClassifier(3), ttsData, "Nearest Neighbors") #0.93
+    # ml(SVC(kernel="linear", C=0.025), ttsData, "Nearest Neighbors") #1.0
+    # ml(OneVsOneClassifier(SVC(gamma=0.7, C=1), ttsData, "Nearest Neighbors") #0.
+    # ml(GaussianProcessClassifier(1.0 * RBF(1.0)), ttsData, "Nearest Neighbors") #
+    # ml(DecisionTreeClassifier(max_depth=5), ttsData, "Nearest Neighbors") #0.8777
+    # ml(RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), ttsData, "Nearest Neighbors") #0.9555
+    ml(MLPClassifier(alpha=1, max_iter=1000), ttsData, "Nearest Neighbors") #0.
+    # ml(AdaBoostClassifier(), ttsData, "Nearest Neighbors")
+    # ml(GaussianNB(), ttsData, "Nearest Neighbors")
+    # ml(QuadraticDiscriminantAnalysis(), ttsData, "Nearest Neighbors")
+      
     # classifier_names = ["Nearest Neighbors"], "Linear SVM", "RBF SVM", #"Gaussian Process",
         #  "Decision Tree", "Random Forest", "Neural Net", "AdaBoost",
         #  "Naive Bayes", "QDA"]
