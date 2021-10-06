@@ -74,4 +74,8 @@ optional arguments:
 
 <br>
 
+## Raspberry PI 3B+
+- Static IP: 192.168.1.10
+- Ethernet: 192.168.1.11
+
 #### The *readme* will be updated more as the project advances.
