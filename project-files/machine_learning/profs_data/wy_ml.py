@@ -21,7 +21,8 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.multiclass import OneVsOneClassifier
 from sklearn import metrics
 
-def ml(X_train, X_test, y_train, y_test, classifier, classifier_name):
+def ml(classifier, ttsData, classifier_name):
+    X_train, X_test, y_train, y_test = ttsData
     # Learn the digits on the train subset
     classifier.fit(X_train, y_train)
 
@@ -50,12 +51,10 @@ if __name__ == "__main__":
     os.chdir(os.path.dirname(__file__))
     X, y, class_labels = read_prof_images()
     X = X.reshape(-1, 256*256*3)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3, random_state=12) 
+    ttsData = train_test_split(X, y, test_size=.3, random_state=12) 
     # print(X.shape, y.shape, class_labels)
-    ml(X_train, X_test, y_train, y_test, KNeighborsClassifier(3), "Nearest Neighbors")
+    ml(KNeighborsClassifier(3), ttsData, "Nearest Neighbors")
 
-
-    
     # SVC(kernel="linear", C=0.025),
     # OneVsOneClassifier(SVC(gamma=0.7, C=1)),
     # GaussianProcessClassifier(1.0 * RBF(1.0)),
