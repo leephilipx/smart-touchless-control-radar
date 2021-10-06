@@ -1,8 +1,9 @@
 import cv2, os, numpy as np
 
-def read_prof_images(reshape=True):
+def read_prof_images():
+    
     '''
-    Return numpy arrays of (X, Y, class_labels), with the first dimension being the sample_index.
+    Return numpy arrays of (X, Y, class_labels), with the first dimension of X and Y being the sample_index.
     '''
 
     root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'prof_samples', 'extra_samples_oct5')
