@@ -32,8 +32,8 @@ def ml(classifier, ttsData, classifier_name):
     # Learn the digits on the train subset
     classifier.fit(X_train, y_train)
 
-    joblib.dump(classifier, f'trained_model/{classifier_name}.pkl')    # Save the model as a pickle in a file
-    model = joblib.load(f'trained_model/{classifier_name}.pkl')        # Load the model from the file
+    joblib.dump(classifier, f'model_files/{classifier_name}.pkl')    # Save the model as a pickle in a file
+    model = joblib.load(f'model_files/{classifier_name}.pkl')        # Load the model from the file
 
     print(f"{classifier} Model")
     # Check the Goodness of Fit (on Train Data)
@@ -53,7 +53,7 @@ def ml(classifier, ttsData, classifier_name):
     print("Predcited values: ", model.predict(X_test))
     print("Actual values:    ", y_test)
 
-def dl():
+def dl(ttsData):
     X_train, X_test, y_train, y_test = ttsData
     y_train = tf.one_hot(y_train, y.shape[0])
     y_test = tf.one_hot(y_test, y.shape[0])
@@ -73,7 +73,7 @@ def dl():
     history = model.fit(X_train,y_train,epochs=50,batch_size=8)
 
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(__file__))
+    os.chdir(os.path.dirname(os.path.dirname(__file__)))
     X, y, class_labels = read_prof_images()
     X = X.reshape(-1, 256*256*3)
     ttsData = train_test_split(X, y, test_size=.3, random_state=12) 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     # ml(GaussianProcessClassifier(1.0 * RBF(1.0)), ttsData, "Nearest Neighbors") #
     # ml(DecisionTreeClassifier(max_depth=5), ttsData, "Nearest Neighbors") #0.8777
     # ml(RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), ttsData, "Nearest Neighbors") #0.9555
-    ml(MLPClassifier(alpha=1, max_iter=1000), ttsData, "Nearest Neighbors") #0.
+    ml(MLPClassifier(alpha=1, max_iter=1000), ttsData, "MLPClassifier") #0.
     # ml(AdaBoostClassifier(), ttsData, "Nearest Neighbors")
     # ml(GaussianNB(), ttsData, "Nearest Neighbors")
     # ml(QuadraticDiscriminantAnalysis(), ttsData, "Nearest Neighbors")
