@@ -4,29 +4,29 @@ from json import loads
 from acconeer.exptool import utils, clients, configs
 
 
-class AcconeerSensor:
+class AcconeerSensorLive:
 
     '''
     Creates a sensor object and its helper functions:
-    • Load sensor configs from a json file
-    • Connect to the Acconeer Radar sensor via serial/socket
-    • Obtain data via IQ mode in realtime
+    (1) Load sensor configs from a json file
+    (2) Connect to the Acconeer Radar sensor via serial port
+    (3) Obtain data via IQ mode in real-time
     '''
 
-    def __init__(self, method, config_path='sensor_configs_final.json', port=None):
-
+    def __init__(self, config_path='sensor_configs_final.json', port=None):
+        '''
+        Initialize the AcconeerSensorLive object.
+        '''
         self.connection_state = False
         self.session_state = False
-        self.method = method
         self.__sensor_config = self.get_config(config_path)
         self.port = port
 
-
     def get_config(self, config_path):
-
         '''
-        Loads configs from an external json file
-
+        Loads configs from an external json file.
+        '''
+        '''
         IQServiceConfig
         mode .............................. IQ
         sensor ............................ [1]
@@ -45,7 +45,6 @@ class AcconeerSensor:
         power_save_mode ................... ACTIVE
         asynchronous_measurement .......... True
         '''
-        
         try:
             config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_path)
             with open(config_path, 'r') as f:
@@ -58,16 +57,15 @@ class AcconeerSensor:
             config.range_interval =[ext_dict['range_min'], ext_dict['range_max']]
             config.update_rate = ext_dict['update_rate']
             print(f'>> Successfully loaded {config_path}')
-
         except Exception:
             print('>> File not found / invalid json file! Using default configs ...')
             config = configs.IQServiceConfig()
-
         return config
 
-
     def get_config_dict(self):
-
+        '''
+        Returns config dict object as a Python dictionary.
+        '''
         return {
             'mode': self.__sensor_config.mode,
             'sensor': self.__sensor_config.sensor,
@@ -87,17 +85,16 @@ class AcconeerSensor:
             'asynchronous_measurement': self.__sensor_config.asynchronous_measurement,
         }
 
-
     def list_serial_ports(self):
-
+        '''
+        Lists the available serial ports for different platforms.
+        '''
         try:
             opsys = os.uname()
             in_wsl = 'microsoft' in opsys.release.lower() and 'linux' in opsys.sysname.lower()
         except Exception:
             in_wsl = False
-
         port_tag_tuples = utils.get_tagged_serial_ports()
-
         if not in_wsl and os.name == 'posix':
             ports = []
             for i, (port, tag) in enumerate(port_tag_tuples):
@@ -108,7 +105,6 @@ class AcconeerSensor:
                 ports.append(port + tag_string)
         else:
             ports = [port for port, *_ in port_tag_tuples]
-
         try:
             if in_wsl:
                 print('>> WSL detected. Limiting serial ports')
@@ -119,44 +115,44 @@ class AcconeerSensor:
                 ports = ports_reduced
         except Exception:
             pass
-
         return ports
 
-
     def autoconnect_serial_port(self):
+        '''
+        Connects to the Acconeer sensor given the serial port.
+        '''
         if self.port is not None:
-            if self.connect_sensor(self.port):
+            if self.connect_serial(self.port):
                 return self.port
         else:
             ports = self.list_serial_ports()
             for port in ports[::-1]:
                 try:
-                    if self.connect_sensor(port):
+                    if self.connect_serial(port):
                         return port
                 except Exception:
                     pass
     
-
-    def connect_sensor(self, port):
-
+    def connect_serial(self, port):
+        '''
+        Connects to the Acconeer sensor given the serial port.
+        '''
         if not self.connection_state:
-
             self.client = clients.UARTClient(port)
             self.client.squeeze = False
-            
             try:
                 info = self.client.connect()
                 self.rss_version = info.get('version_str', None)
                 print(f'>> Connection success on {port}! RSS v{self.rss_version}')
                 self.connection_state = True
-                return True
-                
+                return True   
             except Exception:
                 print(f'>> Could not connect to sensor on {port}, please check the physical connection / free up the port.')
             
-    
-    def disconnect_sensor(self, verbose=True):
-
+    def disconnect_serial(self, verbose=True):
+        '''
+        Disconnects and releases the serial port connected to the Acconeer sensor.
+        '''
         if self.connection_state:
             try:
                 if not self.session_state:
@@ -166,26 +162,25 @@ class AcconeerSensor:
                 self.connection_state = False
             except Exception:
                 pass
-        
         elif verbose:
             print('>> Disconnect failed, no active connection found!')
 
-
     def check_connection_state(self):
-
+        '''
+        Returns the connection state, while printing an error message if appropriate.
+        '''
         if self.connection_state:
             return True
         else:
-            print('>> Connection not established with client. Please run connect_sensor()')
+            print('>> Connection not established with client. Please run connect_serial()')
             return False
 
-
     def start_session(self):
-
+        '''
+        Starts an active session with the Acconeer sensor.
+        '''
         if not self.check_connection_state(): return
-
         if not self.session_state:
-            
             try:
                 self.session_info = self.client.setup_session(self.__sensor_config)
                 self.client.start_session()
@@ -198,9 +193,10 @@ class AcconeerSensor:
                 print('>> Session failed to start!')
                 return
 
-
     def stop_session(self, verbose=True):
-        
+        '''
+        Stops any active sessions with the Acconeer sensor.
+        '''
         if self.session_state:
             try:
                 self.session_state = False
@@ -208,32 +204,46 @@ class AcconeerSensor:
                 print('>> Active session stopped!')
             except Exception:
                 pass
-
         elif verbose:
             print('>> Stop session failed, no active session found!')
 
-
-    def __del__(self):
-
-        self.stop_session(verbose=False)
-        self.disconnect_sensor(verbose=False)
-
-
-
-
-
     def get_next(self):
         '''
-        Returns
+        Returns a frame of IQ data obtained from the Acconeer sensor.
         '''      
         return self.client.get_next()[1]
 
+    def __del__(self):
+        '''
+        Clean up session and serial port.
+        '''
+        self.stop_session(verbose=False)
+        self.disconnect_serial(verbose=False)
+
+
+def getTrainData(override_path=None):
+    '''
+    Return numpy arrays of (X, Y, class_labels), with the first dimension of X and Y being the sample_index.
+    '''
+    if override_path is None:
+        root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', '2021_10_06_final_gestures')
+    dirs = [dir for dir in os.listdir(root_dir) if dir.startswith('gesture_')]
+    X = []
+    Y = []
+    class_labels = [label[8:] for label in dirs]
+    for ind, dir in enumerate(dirs):
+        radarData = [np.load(os.path.join(root_dir, dir, data))['sample'] for data in os.listdir(os.path.join(root_dir, dir)) if data.endswith('.npz')]
+        X = X + radarData
+        Y = Y + [ind] * len(radarData)
+    return np.array(X), np.array(Y), class_labels
+
 
 if __name__ == '__main__':
-
-    radar = AcconeerSensor(method='serial', Nframes=128, config_path='sensor_configs.json')
-    port = radar.autoconnect_serial_port()
-    radar.connect_sensor(port)
-    radar.start_session()
-    radar.get_next()
+    # radar = AcconeerSensorLive(config_path='sensor_configs_final.json', port=None)
+    # port = radar.autoconnect_serial_port()
+    # radar.connect_serial(port)
+    # radar.start_session()
+    # radar.get_next()
+    X, Y, class_labels = getTrainData()
+    print(X.shape, Y.shape, class_labels)
     
