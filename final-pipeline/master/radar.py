@@ -227,6 +227,8 @@ def getTrainData(override_path=None):
     '''
     if override_path is None:
         root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', '2021_10_06_final_gestures')
+    else:
+        root_dir = override_path
     dirs = [dir for dir in os.listdir(root_dir) if dir.startswith('gesture_')]
     X = []
     Y = []
