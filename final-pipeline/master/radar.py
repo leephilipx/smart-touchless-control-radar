@@ -46,7 +46,7 @@ class AcconeerSensorLive:
         asynchronous_measurement .......... True
         '''
         try:
-            config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_path)
+            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), config_path)
             with open(config_path, 'r') as f:
                 ext_dict = loads(f.read())
             config = configs.IQServiceConfig()
@@ -132,6 +132,7 @@ class AcconeerSensorLive:
                         return port
                 except Exception:
                     pass
+        print(f'>> No sensor found on any serial port!')
     
     def connect_serial(self, port):
         '''
@@ -241,8 +242,8 @@ def getTrainData(override_path=None):
 
 
 if __name__ == '__main__':
-    # radar = AcconeerSensorLive(config_path='sensor_configs_final.json', port=None)
-    # port = radar.autoconnect_serial_port()
+    radar = AcconeerSensorLive(config_path='sensor_configs_final.json', port=None)
+    port = radar.autoconnect_serial_port()
     # radar.connect_serial(port)
     # radar.start_session()
     # radar.get_next()
