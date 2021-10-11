@@ -222,14 +222,12 @@ class AcconeerSensorLive:
         self.disconnect_serial(verbose=False)
 
 
-def getTrainData(override_path=None):
+def getTrainData(source_dir):
     '''
+    Scans all files in the directory provided under project-files\\radar_data\\.
     Return numpy arrays of (X, Y, class_labels), with the first dimension of X and Y being the sample_index.
     '''
-    if override_path is None:
-        root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', '2021_10_06_final_gestures')
-    else:
-        root_dir = override_path
+    root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', source_dir)
     dirs = [dir for dir in os.listdir(root_dir) if dir.startswith('gesture_')]
     X = []
     Y = []
@@ -247,6 +245,5 @@ if __name__ == '__main__':
     # radar.connect_serial(port)
     # radar.start_session()
     # radar.get_next()
-    X, Y, class_labels = getTrainData()
+    X, Y, class_labels = getTrainData(source_dir='2021_10_11_data')
     print(X.shape, Y.shape, class_labels)
-    

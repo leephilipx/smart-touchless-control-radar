@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     # Get the data and preprocess it
     import radar, preprocess
-    X, Y, class_labels = radar.getTrainData()
+    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_11_data')
     print(X.shape, Y.shape, class_labels)
     X_mag = preprocess.get_magnitude(X)
     X_input = preprocess.reshape_features(X_mag, 'ml')
