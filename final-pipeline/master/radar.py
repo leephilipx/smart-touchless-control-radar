@@ -21,6 +21,8 @@ class AcconeerSensorLive:
         self.session_state = False
         self.__sensor_config = self.get_config(config_path)
         self.port = port
+        if port is not None:
+            self.autoconnect_serial_port()
 
     def get_config(self, config_path):
         '''
@@ -220,6 +222,7 @@ class AcconeerSensorLive:
         '''
         self.stop_session(verbose=False)
         self.disconnect_serial(verbose=False)
+        print('>> AcconeerSensorLive object cleaned up!')
 
 
 def getTrainData(source_dir):
@@ -240,10 +243,10 @@ def getTrainData(source_dir):
 
 
 if __name__ == '__main__':
-    radar = AcconeerSensorLive(config_path='sensor_configs_final.json', port=None)
-    port = radar.autoconnect_serial_port()
-    # radar.connect_serial(port)
-    # radar.start_session()
-    # radar.get_next()
+    radarSensor = AcconeerSensorLive(config_path='sensor_configs_final.json', port=None)
+    port = radarSensor.autoconnect_serial_port()
+    # radarSensor.connect_serial(port)
+    # radarSensor.start_session()
+    # radarSensor.get_next()
     X, Y, class_labels = getTrainData(source_dir='2021_10_11_data')
     print(X.shape, Y.shape, class_labels)

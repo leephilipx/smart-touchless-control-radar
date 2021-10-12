@@ -10,6 +10,8 @@ import sklearn as sk
 import pickle
 from read_images import read_prof_images, read_our_radar_data
 from sklearn.model_selection import train_test_split
+from tensorflow.keras.metrics import AUC
+from tensorflow.keras.models import load_model
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -24,7 +26,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.multiclass import OneVsOneClassifier
 from sklearn import metrics
-from tensorflow.keras.metrics import AUC
 from sklearn.metrics import roc_auc_score
 
 
@@ -44,7 +45,7 @@ classifier_names = ["Nearest Neighbors", "Linear SVM", "Gaussian Process",
     "Naive Bayes", "QDA"]#"RBF SVM"
 
 use_prof_samples = False
-use_ml = True
+use_ml = False
 loop_models = False
 
 def machine_learning(classifier, ttsData, classifier_name):
@@ -58,13 +59,13 @@ def machine_learning(classifier, ttsData, classifier_name):
     print(f"{classifier} Model")
     # Check the Goodness of Fit (on Train Data)
     print("Goodness of Fit of Model \tTrain Dataset")
-    train_accuracy = model.score(X_train, y_train)
-    print("Classification Accuracy \t:", train_accuracy, end='\n\n')
+    train_acc = model.score(X_train, y_train)
+    print("Classification Accuracy \t:", train_acc, end='\n\n')
 
     # Check the Goodness of Fit (on Test Data)
     print("Goodness of Fit of Model \tTest Dataset")
-    test_accuracy = model.score(X_test, y_test)
-    print("Classification Accuracy \t:", test_accuracy, end='\n\n')
+    test_acc = model.score(X_test, y_test)
+    print("Classification Accuracy \t:", test_acc, end='\n\n')
 
     # disp = metrics.plot_confusion_matrix(model, X_test, y_test)
     # disp.figure_.suptitle("Confusion Matrix")
@@ -79,13 +80,13 @@ def machine_learning(classifier, ttsData, classifier_name):
         y_prob = model.decision_function(X_test)
     auc = roc_auc_score(y_test, y_prob, multi_class='ovr')
     print("AUC Score: ", auc)
-    return auc
+    return train_acc, test_acc, auc
 
 def deep_learning(ttsData):
     X_train, X_test, y_train, y_test = ttsData
-    y_train = tf.one_hot(y_train, y.shape[0])
-    y_test = tf.one_hot(y_test, y.shape[0])
-
+    y_train = tf.one_hot(y_train, len(np.unique(y)))
+    y_test = tf.one_hot(y_test, len(np.unique(y)))
+    ##### MODEL ######
     model=k.Sequential()
     model.add(tf.keras.Input(shape=X.shape[1:]))
     model.add(k.layers.Conv2D(32,3,3,padding='valid',
@@ -95,10 +96,24 @@ def deep_learning(ttsData):
     model.add(k.layers.Dense(64,activation="relu"))
     model.add(k.layers.Dense(64,activation="relu"))
     model.add(k.layers.Dense(64,activation="relu"))
-    model.add(k.layers.Dense(y.shape[0],activation="softmax"))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.add(k.layers.Dense(len(np.unique(y)),activation="softmax"))
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', AUC()])
+    ##### MODEL ######
     model.summary()
-    history = model.fit(X_train,y_train,epochs=50,batch_size=8)
+    history = model.fit(X_train,y_train,epochs=10,batch_size=8)
+    model.save('models/deep_learning_model')
+    # model = load_model('models/deep_learning_model')
+    train_acc = model.evaluate(X_train, y_train, batch_size=128)
+    test_acc = model.evaluate(X_test, y_test, batch_size=128)
+    auc = np.max(history.history['auc'])
+    print("AUC Score: ", auc)
+
+    y_preds = model.predict(X_test)
+    y_labels = []
+    for i in range(len(y_preds)):
+        y_labels.append(np.argmax(y_preds[i]))
+    print(y_labels)
+    return train_acc, test_acc, auc
 
 def choose_dataset():
     """
@@ -135,10 +150,14 @@ def choose_dataset():
 def select_pipeline(ttsData, classifiers, classifier_names):
     if use_ml:  
         if loop_models:
+            train_acc_dict = {}
+            test_acc_dict = {}
             auc_score_dict = {}
             fig, ax = plt.subplots()
             for cf, cf_name in zip(classifiers, classifier_names):
-                auc = machine_learning(cf, ttsData, cf_name)
+                train_acc, test_acc, auc = machine_learning(cf, ttsData, cf_name)
+                train_acc_dict[cf_name] = train_acc
+                test_acc_dict[cf_name] = test_acc
                 auc_score_dict[cf_name] = auc
             ax.plot(auc_score_dict.keys(), auc_score_dict.values())
             print(auc_score_dict)
@@ -147,16 +166,18 @@ def select_pipeline(ttsData, classifiers, classifier_names):
             ax.set_ylabel("AUC Score")
             plt.show()
         else:
-            auc = machine_learning(KNeighborsClassifier(3), ttsData, "Nearest Neighbors") #0.93 
+            train_acc, test_acc, auc = machine_learning(KNeighborsClassifier(3), ttsData, "Nearest Neighbors") #0.93 
     else:
-        deep_learning(ttsData)
+        train_acc, test_acc, auc = deep_learning(ttsData)
+    return train_acc, test_acc, auc
 
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.dirname(__file__)))
     X, y, class_labels = choose_dataset()
     ttsData = train_test_split(X, y, test_size=.3, random_state=12)
+    train_acc, test_acc, auc = select_pipeline(ttsData, classifiers, classifier_names)
     # np.save('x_test.npy', ttsData[1])
-    np.savez_compressed('dataset.npz', X=X, y=y, class_labels=class_labels)
+    # np.savez_compressed('dataset.npz', X=X, y=y, class_labels=class_labels)
     # print(X.shape, y.shape, class_labels)   
     # select_pipeline(ttsData, classifiers, classifier_names)
