@@ -22,14 +22,10 @@ if __name__ == "__main__":
             new_frame = np.expand_dims(radarSensor.get_next(), axis=0)
             X_frame = np.concatenate([X_frame[:, 1:, :], new_frame], axis=1)
             frame_buffer += 1
-            if frame_buffer == 64:
+            if frame_buffer == 48:
                 frame_buffer = 0
                 X_input = preprocess.get_magnitude(X_frame)
                 X_input = preprocess.reshape_features(X_input, type='dl')
-
-                 
-                X_train, X_test, y_train, y_test = model.train_test_split(X_input, Y, test_size=0.3, random_state=12)
-                y_train_one_hot, y_test_one_hot = preprocess.one_hot_dl([y_train, y_test])
                 y_probs = model.predict_proba(X_input)
                 y_preds = np.where(y_probs > 0.7, 1, 0)
                 if np.sum(y_preds) == 0: y_preds = 4

@@ -100,7 +100,7 @@ def deep_learning(ttsData):
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', AUC()])
     ##### MODEL ######
     model.summary()
-    history = model.fit(X_train,y_train,epochs=10,batch_size=8)
+    history = model.fit(X_train,y_train,epochs=1,batch_size=8)
     model.save('models/deep_learning_model')
     # model = load_model('models/deep_learning_model')
     train_acc = model.evaluate(X_train, y_train, batch_size=128)
@@ -109,10 +109,13 @@ def deep_learning(ttsData):
     print("AUC Score: ", auc)
 
     y_preds = model.predict(X_test)
-    y_labels = []
-    for i in range(len(y_preds)):
-        y_labels.append(np.argmax(y_preds[i]))
-    print(y_labels)
+    # y_labels = []
+    # for i in range(len(y_preds)):
+    #     y_labels.append(np.argmax(y_preds[i]))
+    test_auc = roc_auc_score(y_test, y_preds, multi_class='ovr')
+    print(test_auc)
+    print(y_preds)
+    # print(y_preds)
     return train_acc, test_acc, auc
 
 def choose_dataset():

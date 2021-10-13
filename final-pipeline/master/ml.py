@@ -8,6 +8,7 @@ from tensorflow.keras.layers import Input, Flatten, Dense, Conv2D, MaxPooling2D
 from tensorflow.keras.layers import *
 from tensorflow.keras.metrics import AUC
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.python.keras.saving import model_config
 
 class MachineLearningModel():
 
@@ -37,7 +38,9 @@ class MachineLearningModel():
 
     def metrics(self, X, y):
         y_probs = self.model.predict_proba(X)
-        return self.model.score(X, y), roc_auc_score(y, y_probs, multi_class='ovr')
+        acc = self.model.score(X, y)
+        auc = roc_auc_score(y, y_probs, multi_class='ovr')
+        return acc, auc
     
     def evaluate_batch(self, X_test, y_test):
         y_preds = self.model.predict(X_test)
@@ -89,27 +92,40 @@ class DeepLearningModel():
 
     def train_batch(self, X_train, y_train, **kwargs):
         self.history = self.model.fit(X_train, y_train, verbose=2, **kwargs)
-        return self.history
+        train_acc, train_auc = self.metrics(X_train, y_train, evaluate=False)
+        return train_acc, train_auc
 
-    def evaluate_batch(self, features):
-        y_preds = self.model.predict(features)
-        y_labels = []
-        for i in range(len(y_preds)):
-            y_labels.append(np.argmax(y_preds[i]))
-        return y_labels, y_preds
+    def metrics(self, X, y, evaluate=True):
+        if evaluate:
+            y_preds = self.model.predict(X)
+            acc = self.model.evaluate(X, y, batch_size=8)[-1]
+            auc = roc_auc_score(y, y_preds, multi_class='ovr')  
+        else:
+            acc = self.model.evaluate(X, y, batch_size=8)[-1]
+            auc = self.history.history['auc'][-1]
+        return acc, auc
+
+    def evaluate_batch(self, X_test, y_test):
+        y_preds = self.model.predict(X_test)
+        test_acc, test_auc = self.metrics(X_test, y_test, evaluate=True)
+        return test_acc, test_auc, y_preds
 
     def load_saved_model(self, model_path):
         assert model_path.endswith('.h5'), 'Unknown model_path'
         self.model = load_model(os.path.join(self.model_dir, model_path))
         return self.model
     
+    def predict(self, y_preds):
+        return np.argmax(y_preds, axis=0)
+
+    def predict_proba(self, features):
+        return self.model.predict(features)
+    
     def instantiate_callbacks(self, temp_path='temp_checkpoint.h5'):
         checkpoint = ModelCheckpoint(os.path.join(self.model_dir, temp_path), monitor='val_loss',
                                      verbose=0, save_best_only=True, mode='min', save_weights_only=False)
         earlystopping = EarlyStopping(monitor='val_loss', patience=4)
         return [checkpoint, earlystopping]
-
-
 
 if __name__ == "__main__":
 
@@ -143,4 +159,8 @@ if __name__ == "__main__":
     print(y_train_one_hot.shape, y_test_one_hot.shape)
     callbacks = model.instantiate_callbacks()
     model.initialise_model(X_train, y_train_one_hot)
-    model.train_batch(X_train, y_train_one_hot, validation_data=(X_test, y_test_one_hot), epochs=20, batch_size=8, callbacks=callbacks)
+    train_acc, train_auc = model.train_batch(X_train, y_train_one_hot, validation_data = (X_test, y_test_one_hot), epochs=20, batch_size=8, callbacks=callbacks)
+    test_acc, test_auc, y_preds = model.evaluate_batch(X_test, y_test_one_hot)
+    print('Train-Test Acc =', train_acc, test_acc)
+    print('Train-Test AUC =', train_auc, test_auc)
+    print(y_preds.shape)
