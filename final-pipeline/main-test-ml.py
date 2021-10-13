@@ -6,6 +6,7 @@ if __name__ == "__main__":
 
     model = ml.MachineLearningModel(model_path='knn.pkl')
     X, Y, class_labels = radar.getTrainData(source_dir='2021_10_11_data')
+    class_labels.append('background')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
     port = radarSensor.autoconnect_serial_port()
@@ -26,8 +27,10 @@ if __name__ == "__main__":
                 X_input = preprocess.get_magnitude(X_frame)
                 X_input = preprocess.reshape_features(X_input, type='ml')
                 y_probs = model.predict_proba(X_input)
-                y_preds = np.argmax(y_probs)
-                print(y_preds, class_labels[y_preds], y_probs)
+                y_preds = np.where(y_probs > 0.7, 1, 0)
+                if np.sum(y_preds) == 0: y_preds = 4
+                else: y_preds = np.argmax(y_preds)
+                print(y_preds, class_labels[y_preds], np.squeeze(y_probs))
 
         except KeyboardInterrupt:
             print('>> KeyboardInterrupt caught! Exiting ...')
@@ -35,10 +38,10 @@ if __name__ == "__main__":
 
         except Exception as e:
             try:
-                del radarSensor
                 print('\n>> Connection to sensor failed, trying again in 5 seconds ...')
                 sleep(5)
-                radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
+                radarSensor.stop_session(verbose=False)
+                radarSensor.disconnect_serial(verbose=False)
                 port = radarSensor.autoconnect_serial_port()
                 radarSensor.connect_serial(port)
                 radarSensor.start_session()

@@ -58,13 +58,15 @@ class MachineLearningModel():
 
 class DeepLearningModel():
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         '''
         Initiates an TensorFlow ML model, or loads one from model_path if provided.
         '''
         self.model = None
         self.root_dir = os.path.dirname(__file__)
         self.model_dir = os.path.join(self.root_dir, 'models')
+        if 'model_path' in kwargs:
+            self.load_saved_model(kwargs['model_path'])
     
     def train_test_split(self, X, y, test_size, random_state):
         '''
@@ -96,8 +98,9 @@ class DeepLearningModel():
             y_labels.append(np.argmax(y_preds[i]))
         return y_labels, y_preds
 
-    def load_saved_model(self):
-        self.model = load_model(self.model_dir)
+    def load_saved_model(self, model_path):
+        assert model_path.endswith('.h5'), 'Unknown model_path'
+        self.model = load_model(os.path.join(self.model_dir, model_path))
         return self.model
     
     def instantiate_callbacks(self, temp_path='temp_checkpoint.h5'):
