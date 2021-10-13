@@ -18,18 +18,19 @@ if __name__ == "__main__":
     while True:
 
         try:
-            new_frame = radarSensor.get_next().reshape(1, 1, -1)
-            X_frame = np.concatenate([X_frame[:, :-1, :], new_frame], axis=1)
-            frame_buffer = 1
-            if frame_buffer == 8:
+            new_frame = np.expand_dims(radarSensor.get_next(), axis=0)
+            X_frame = np.concatenate([X_frame[:, 1:, :], new_frame], axis=1)
+            frame_buffer += 1
+            if frame_buffer == 64:
                 frame_buffer = 0
                 X_input = preprocess.get_magnitude(X_frame)
                 X_input = preprocess.reshape_features(X_input, type='ml')
-                y_preds = model.predict(X_input)
-                print(y_preds, class_labels[y_preds[0]])
+                y_probs = model.predict_proba(X_input)
+                y_preds = np.argmax(y_probs)
+                print(y_preds, class_labels[y_preds], y_probs)
 
         except KeyboardInterrupt:
-            print('KeyboardInterrupt caught! Exiting ...')
+            print('>> KeyboardInterrupt caught! Exiting ...')
             break
 
         except Exception as e:
@@ -42,5 +43,5 @@ if __name__ == "__main__":
                 radarSensor.connect_serial(port)
                 radarSensor.start_session()
             except KeyboardInterrupt:
-                print('KeyboardInterrupt caught! Exiting ...')
+                print('>> KeyboardInterrupt caught! Exiting ...')
                 break

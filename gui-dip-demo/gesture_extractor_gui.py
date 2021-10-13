@@ -3,10 +3,11 @@ from tkinter import ttk, filedialog, simpledialog
 from argparse import ArgumentParser
 from h5py import File
 from json import loads
-from os import path
+from os import path, listdir
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from numpy.lib.npyio import save
 
 
 class DataAcquisiton:
@@ -16,7 +17,7 @@ class DataAcquisiton:
         self.Nframes = 64
         self.extracted_count = 0
         self.extracted_samples = []
-        self.root.title("Gesture Extractor GUI - DIP E047 v1.3.2")
+        self.root.title("Gesture Extractor GUI - DIP E047 v1.3.3")
         # self.root.minsize(920, 420)
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
@@ -197,8 +198,11 @@ class DataAcquisiton:
                     ind = filename.find('.')
                     if ind != -1: filename = filename[:ind]
                     try:
+                        offset = 0
+                        saved_names = [name for name in listdir(save_dir) if (name.startswith(f'{filename}-') and name.endswith('.npz'))]
+                        if len(saved_names): offset = int(saved_names[-1][-7:-4].lstrip('0')) + 1
                         for cnt in range(self.extracted_count):
-                            np.savez_compressed(path.join(save_dir, f'{filename}-{str(cnt).zfill(3)}.npz'), sample=self.extracted_samples[cnt])
+                            np.savez_compressed(path.join(save_dir, f'{filename}-{str(cnt+offset).zfill(3)}.npz'), sample=self.extracted_samples[cnt])
                         self.info_label['text'] = f"  {self.extracted_count} sample{'' if self.extracted_count == 1 else 's'} saved to {path.basename(save_dir)}!"
                     except:
                         self.info_label['text'] = '  An error has occured!'
