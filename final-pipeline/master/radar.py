@@ -20,6 +20,7 @@ class AcconeerSensorLive:
         self.connection_state = False
         self.session_state = False
         self.__sensor_config = self.get_config(config_path)
+        print(self.__sensor_config)
         self.port = port
         if port is not None:
             self.autoconnect_serial_port()

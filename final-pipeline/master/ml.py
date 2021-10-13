@@ -52,6 +52,9 @@ class MachineLearningModel():
     def predict(self, features):
         return self.model.predict(features)
 
+    def predict_proba(self, features):
+        return self.model.predict_proba(features)
+
 
 class DeepLearningModel():
 
@@ -102,7 +105,6 @@ class DeepLearningModel():
                                      verbose=0, save_best_only=True, mode='min', save_weights_only=False)
         earlystopping = EarlyStopping(monitor='val_loss', patience=4)
         return [checkpoint, earlystopping]
-
 
 
 
