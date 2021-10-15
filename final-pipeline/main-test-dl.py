@@ -5,8 +5,7 @@ import numpy as np
 if __name__ == "__main__":
 
     model = ml.DeepLearningModel(model_path='temp_checkpoint.h5')
-    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_11_data')
-    class_labels.append('background')
+    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
     port = radarSensor.autoconnect_serial_port()
@@ -15,6 +14,7 @@ if __name__ == "__main__":
     
     X_frame = np.zeros((1, X.shape[1], X.shape[2]), dtype=X.dtype)
     frame_buffer = 0
+    confidence_threshold = 0.7
 
     while True:
 
@@ -22,13 +22,13 @@ if __name__ == "__main__":
             new_frame = np.expand_dims(radarSensor.get_next(), axis=0)
             X_frame = np.concatenate([X_frame[:, 1:, :], new_frame], axis=1)
             frame_buffer += 1
-            if frame_buffer == 48:
+            if frame_buffer == 64:
                 frame_buffer = 0
                 X_input = preprocess.get_magnitude(X_frame)
                 X_input = preprocess.reshape_features(X_input, type='dl')
                 y_probs = model.predict_proba(X_input)
-                y_preds = np.where(y_probs > 0.7, 1, 0)
-                if np.sum(y_preds) == 0: y_preds = 4
+                y_preds = np.where(y_probs > confidence_threshold, 1, 0)
+                if np.sum(y_preds) == 0: y_preds = 0
                 else: y_preds = np.argmax(y_preds)
                 print(y_preds, class_labels[y_preds], np.squeeze(y_probs))
 

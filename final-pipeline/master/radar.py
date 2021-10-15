@@ -2,6 +2,7 @@ import os, numpy as np
 from re import findall
 from json import loads
 from acconeer.exptool import utils, clients, configs
+from tensorflow.python.lib.io.file_io import is_directory
 
 
 class AcconeerSensorLive:
@@ -232,7 +233,8 @@ def getTrainData(source_dir):
     Return numpy arrays of (X, Y, class_labels), with the first dimension of X and Y being the sample_index.
     '''
     root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', source_dir)
-    dirs = [dir for dir in os.listdir(root_dir) if dir.startswith('gesture_')]
+    dirs = [dir for dir in os.listdir(root_dir) if (dir.startswith('gesture_') and os.path.isdir(os.path.join(root_dir, dir)))]
+    assert len(dirs) > 0, "No matching folders with prefix 'gesture_'!"
     X = []
     Y = []
     class_labels = [label[8:] for label in dirs]

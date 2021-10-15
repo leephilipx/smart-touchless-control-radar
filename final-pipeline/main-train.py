@@ -3,7 +3,7 @@ from sklearn.neighbors import KNeighborsClassifier
     
 if __name__ == "__main__":
 
-    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_11_data')
+    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
     print(X.shape, Y.shape, class_labels)
     
     X_mag = preprocess.get_magnitude(X)
