@@ -1,8 +1,8 @@
 import os, numpy as np
 from re import findall
-from json import loads
+from json import loads as json_loads
+from pickle import dump as pickle_dump, load as pickle_load
 from acconeer.exptool import utils, clients, configs
-from tensorflow.python.lib.io.file_io import is_directory
 
 
 class AcconeerSensorLive:
@@ -52,7 +52,7 @@ class AcconeerSensorLive:
         try:
             config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), config_path)
             with open(config_path, 'r') as f:
-                ext_dict = loads(f.read())
+                ext_dict = json_loads(f.read())
             config = configs.IQServiceConfig()
             config.hw_accelerated_average_samples = ext_dict['HWAAS']
             config.gain = ext_dict['gain']
@@ -229,7 +229,7 @@ class AcconeerSensorLive:
 
 def getTrainData(source_dir):
     '''
-    Scans all files in the directory provided under project-files\\radar_data\\.
+    Scans all files in the directory provided under project-files\\radar_data\\ and saves dataset info.
     Return numpy arrays of (X, Y, class_labels), with the first dimension of X and Y being the sample_index.
     '''
     root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', source_dir)
@@ -242,7 +242,19 @@ def getTrainData(source_dir):
         radarData = [np.load(os.path.join(root_dir, dir, data))['sample'] for data in os.listdir(os.path.join(root_dir, dir)) if data.endswith('.npz')]
         X = X + radarData
         Y = Y + [ind] * len(radarData)
+    with open(os.path.join(root_dir, 'dataset_info.pickle'), 'wb') as f:
+        pickle_dump((np.array(X).shape, np.array(Y).shape, class_labels), f)
     return np.array(X), np.array(Y), class_labels
+
+
+def getDatasetInfo(source_dir):
+    '''
+    Return dataset info (X_shape, Y_shape, class_labels) from previous training instance.
+    '''
+    root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', source_dir)
+    with open(os.path.join(root_dir, 'dataset_info.pickle'), 'rb') as f:
+        result = pickle_load(f)
+    return result
 
 
 if __name__ == '__main__':
@@ -251,5 +263,5 @@ if __name__ == '__main__':
     # radarSensor.connect_serial(port)
     # radarSensor.start_session()
     # radarSensor.get_next()
-    X, Y, class_labels = getTrainData(source_dir='2021_10_11_data')
-    print(X.shape, Y.shape, class_labels)
+    X, Y, class_labels = getTrainData(source_dir='2021_10_13_data')
+    print(getDatasetInfo(source_dir='2021_10_13_data'))

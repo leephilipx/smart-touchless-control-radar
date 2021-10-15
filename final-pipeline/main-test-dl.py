@@ -5,14 +5,14 @@ import numpy as np
 if __name__ == "__main__":
 
     model = ml.DeepLearningModel(model_path='temp_checkpoint.h5')
-    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
+    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_13_data')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
     port = radarSensor.autoconnect_serial_port()
     radarSensor.connect_serial(port)
     radarSensor.start_session()
     
-    X_frame = np.zeros((1, X.shape[1], X.shape[2]), dtype=X.dtype)
+    X_frame = np.zeros((1, X_shape[1], X_shape[2]), dtype=np.complex)
     frame_buffer = 0
     confidence_threshold = 0.7
 

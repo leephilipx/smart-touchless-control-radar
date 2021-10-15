@@ -5,7 +5,7 @@ import numpy as np
 if __name__ == "__main__":
 
     model = ml.MachineLearningModel(model_path='knn.pkl')
-    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_11_data')
+    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_11_data')
     class_labels.append('background')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     radarSensor.connect_serial(port)
     radarSensor.start_session()
     
-    X_frame = np.zeros((1, X.shape[1], X.shape[2]), dtype=X.dtype)
+    X_frame = np.zeros((1, X_shape[1], X_shape[2]), dtype=np.complex)
     frame_buffer = 0
 
     while True:
