@@ -1,12 +1,14 @@
 from master import radar, preprocess, plotutils, ml
 from sklearn.neighbors import KNeighborsClassifier
+import numpy as np
     
 if __name__ == "__main__":
 
-    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
+    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_16_testing_data_new')
     print(X.shape, Y.shape, class_labels)
     
-    X_mag = preprocess.get_magnitude(X)
+    # X_mag = preprocess.get_magnitude(X)
+    X_mag = preprocess.get_batch(X, mode='mfcc')
 
     ##### ML ######
 
@@ -25,6 +27,9 @@ if __name__ == "__main__":
 
     X_input = preprocess.reshape_features(X_mag, type='dl')
     print(X_mag.shape, X_input.shape)
+
+    # np.savez_compressed('X_input.npz', X_input=X_input)
+    # X_input = np.load('X_input.npz')['X_input']
 
     model = ml.DeepLearningModel()
     X_train, X_test, y_train, y_test = model.train_test_split(X_input, Y, test_size=0.3, random_state=0)

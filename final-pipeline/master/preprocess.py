@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import signal
+from cv2 import resize
 from librosa.feature import mfcc
 
 def get_magnitude(data):
@@ -27,7 +28,6 @@ def one_hot_dl(y):
     else:
         return np.eye(np.unique(y).shape[0])[y]
 
-
 def get_stft(radarData):
 
     f0 = 60e9       	# radar operating frequency
@@ -50,7 +50,8 @@ def get_stft(radarData):
     STFTShift = np.fft.fftshift(STFT, axes=0)                # fftshift means 0 Doppler frequency is at center
     STFTShiftDB = 20 * np.log10(np.abs(STFTShift))           # Represent in dB
     STFTShiftDB = STFTShiftDB - np.max(STFTShiftDB)          # Normalize data to max value (i.e., the max value is 0dB)
-    return STFTShiftDB
+
+    return resize(STFTShiftDB, dsize=(STFTShiftDB.shape[1], STFTShiftDB.shape[1]))
 
 def get_mfcc(radarData):
     radar1D = radarData.reshape(-1, 1).squeeze()
@@ -63,6 +64,7 @@ def get_batch(radarData, mode):
         return np.array([get_stft(radarData[i, :]) for i in range(Nsamples)])
     elif mode == 'mfcc':
         return np.array([get_mfcc(radarData[i, :]) for i in range(Nsamples)])
+
 
 if __name__ == "__main__":
 

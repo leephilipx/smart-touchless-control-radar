@@ -2,10 +2,11 @@ from master import radar, preprocess, ml
 from time import sleep
 import numpy as np
 
+
 if __name__ == "__main__":
 
     model = ml.DeepLearningModel(model_path='temp_checkpoint.h5')
-    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_13_data')
+    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_16_testing_data_new')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
     port = radarSensor.autoconnect_serial_port()
@@ -15,6 +16,7 @@ if __name__ == "__main__":
     X_frame = np.zeros((1, X_shape[1], X_shape[2]), dtype=np.complex)
     frame_buffer = 0
     confidence_threshold = 0.7
+    np.set_printoptions(suppress=True, precision=3)
 
     while True:
 
@@ -24,12 +26,14 @@ if __name__ == "__main__":
             frame_buffer += 1
             if frame_buffer == 64:
                 frame_buffer = 0
-                X_input = preprocess.get_magnitude(X_frame)
+                # X_input = preprocess.get_magnitude(X_frame)
+                X_input = preprocess.get_batch(X_frame, mode='mfcc')
                 X_input = preprocess.reshape_features(X_input, type='dl')
                 y_probs = model.predict_proba(X_input)
-                y_preds = np.where(y_probs > confidence_threshold, 1, 0)
-                if np.sum(y_preds) == 0: y_preds = 0
-                else: y_preds = np.argmax(y_preds)
+                # y_preds = np.where(y_probs > confidence_threshold, 1, 0)
+                # if np.sum(y_preds) == 0: y_preds = 0
+                # else: y_preds = np.argmax(y_preds)
+                y_preds = np.argmax(y_probs)
                 print(y_preds, class_labels[y_preds], np.squeeze(y_probs))
 
         except KeyboardInterrupt:
