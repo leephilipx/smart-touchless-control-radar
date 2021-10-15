@@ -60,7 +60,7 @@ def get_batch(radarData, mode):
         return np.array([get_mfcc(radarData[i, :]) for i in range(Nsamples)])
 
 def get_stft_plot(index, class_labels):
-    fig, axes = plt.subplots(2,2, figsize=(10,40))
+    fig, axes = plt.subplots(2,2)
     axes = axes.ravel()
     fig.suptitle('Doppler-Time Response (STFT)');
     for i, ax in zip(index, axes):
@@ -70,20 +70,20 @@ def get_stft_plot(index, class_labels):
         dAxis, tAxis, STFT = get_stft(x)
         dAxis = np.fft.fftshift(dAxis)               # Shift center as 0 Doppler frequency
         ax.pcolormesh(tAxis, dAxis/1e3, STFT, cmap='jet', vmin =-40, vmax = -3)
-        ax.set_title(f'{label}');
+        ax.set_title(f'{label} | {str(i).zfill(3)}');
         # ax.set_xlabel('Time (s)');
         ax.set_ylabel('Doppler (kHz)');
         ax.set_xlim((0,0.5));
         ax.set_ylim((-2,2));
-    # plt.colorbar();
-    plt.show();
+    # plt.show();
+    plt.savefig('stft.jpg')
 
 if __name__ == "__main__":
 
     import radar
     X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
     print(X.shape, Y.shape, class_labels)
-    get_stft_plot(index=(0, 250, 501, 753), class_labels=class_labels)
+    get_stft_plot(index=np.random.randint([0,250,500,750], [250,500,750,1000]), class_labels=class_labels)
     # X_STFT = get_mfcc(X)
     # print(X_STFT.shape)
     # X_input = reshape_features(X_STFT, type='dl')
