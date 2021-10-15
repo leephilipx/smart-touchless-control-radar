@@ -52,12 +52,10 @@ def get_stft(radarData):
     STFTShiftDB = STFTShiftDB - np.max(STFTShiftDB)          # Normalize data to max value (i.e., the max value is 0dB)
     return STFTShiftDB
 
-
 def get_mfcc(radarData):
     radar1D = radarData.reshape(-1, 1).squeeze()
     radar1D = radar1D - radar1D.mean()
     return mfcc(np.real(radar1D), sr = 1, n_mfcc = 80)
-
 
 def get_batch(radarData, mode):
     Nsamples = radarData.shape[0]
@@ -65,7 +63,6 @@ def get_batch(radarData, mode):
         return np.array([get_stft(radarData[i, :]) for i in range(Nsamples)])
     elif mode == 'mfcc':
         return np.array([get_mfcc(radarData[i, :]) for i in range(Nsamples)])
-
 
 if __name__ == "__main__":
 
