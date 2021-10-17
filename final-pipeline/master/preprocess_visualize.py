@@ -2,31 +2,10 @@ import numpy as np
 from scipy import signal
 import matplotlib.pyplot as plt
 from librosa.feature import mfcc
-
-def get_magnitude(data):
-    '''
-    Returns the absolute magnitude without normalization as a numpy array (Nsamples, NTS, Nframes)
-    '''
-    return np.abs(np.swapaxes(data, 1, 2))
-
-def reshape_features(data, type):
-    '''
-    Reshapes the data features depending on the model type.
-    '''
-    if type == 'ml':
-        return data.reshape(data.shape[0], -1)
-    elif type == 'dl':
-        if len(data.shape) == 4: return data
-        return np.expand_dims(data, axis=-1)
-
-def one_hot_dl(y):
-    '''
-    One hot encodes the labels or a list of labels.
-    '''
-    if type(y) is list:
-        return [np.eye(np.unique(labels).shape[0])[labels] for labels in y]
-    else:
-        return np.eye(np.unique(y).shape[0])[y]
+from multiprocessing import Process
+import os
+import preprocess
+from atpbar import atpbar, flush, register_reporter, find_reporter
 
 def get_stft(radarData):
     f0 = 60e9       	# radar operating frequency
@@ -52,14 +31,7 @@ def get_mfcc(radarData):
     radar1D = radar1D - radar1D.mean()
     return mfcc(np.real(radar1D), sr = 1, n_mfcc = 80)
 
-def get_batch(radarData, mode):
-    Nsamples = radarData.shape[0]
-    if mode == 'stft':
-        return np.array([get_stft(radarData[i, :]) for i in range(Nsamples)])
-    elif mode == 'mfcc':
-        return np.array([get_mfcc(radarData[i, :]) for i in range(Nsamples)])
-
-def get_stft_plot(index, class_labels):
+def get_stft_comparison_plot(X, Y, class_labels, index):
     fig, axes = plt.subplots(2,2)
     axes = axes.ravel()
     fig.suptitle('Doppler-Time Response (STFT)');
@@ -78,12 +50,84 @@ def get_stft_plot(index, class_labels):
     # plt.show();
     plt.savefig('stft.jpg')
 
-if __name__ == "__main__":
+def get_single_stft_plot(X, Y, class_labels, index, source_dir):
+    x = X[index]
+    y = Y[index]
+    label = class_labels[y]
+    dAxis, tAxis, STFT = get_stft(x)
+    dAxis = np.fft.fftshift(dAxis)               # Shift center as 0 Doppler frequency
+    root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', source_dir, 'images_stft')
+    plt.plot()
+    plt.pcolormesh(tAxis, dAxis/1e3, STFT, cmap='jet', vmin =-40, vmax = -3)
+    plt.title(f'STFT: {label}-{str(index).zfill(3)}');
+    plt.xlabel('Time (s)');
+    plt.ylabel('Doppler (kHz)');
+    plt.xlim((0,0.5));
+    plt.ylim((-2,2));
+    # plt.show();
+    plt.savefig(os.path.join(root_dir, f'{label}-{str(index).zfill(3)}.jpg'))
 
+def get_mag_plot(X, Y, class_labels, index, source_dir):
+    x = X[index]
+    y = Y[index]
+    label = class_labels[y]
+    root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', source_dir, 'images_magnitude')
+    plt.plot()
+    plt.imshow(x, aspect='auto', origin='lower', cmap='jet');
+    plt.title(f'Magnitude: {label}-{str(index).zfill(3)}');
+    plt.xlabel('Frame'); 
+    plt.ylabel('Range (cm)');
+    plt.yticks(np.linspace(0, x.shape[0]-1, 5), labels=np.linspace(20, 60, 5).astype(int))
+    # plt.show();
+    plt.savefig(os.path.join(root_dir, f'{label}-{str(index).zfill(3)}.jpg'))
+
+def multiproc_loop(mode, reporter, start, stop, class_labels, source_dir, X, Y):
+    register_reporter(reporter)
+    if mode == 'mag':
+        X = preprocess.get_magnitude(X)
+        for i in atpbar(range(start, stop), name=f'loop {start}-{stop-1}'):
+            get_mag_plot(index=i, class_labels=class_labels, source_dir=source_dir, X=X, Y=Y)
+    if mode == 'stft':
+        for i in atpbar(range(start, stop), name=f'loop {start}-{stop-1}'):
+            get_single_stft_plot(index=i, class_labels=class_labels, source_dir=source_dir, X=X, Y=Y)
+
+def choose_plots(X, Y, class_labels, source_dir, multiproc, mode, number):
+    if multiproc:                                     # Use multiprocessors
+        reporter = find_reporter()
+        processes = []
+        for index in range(*number):
+            p = Process(target=multiproc_loop, args=(mode, reporter, index, index+100, class_labels, 
+                                                     source_dir, X, Y))
+            processes.append(p)
+            p.start()
+        for p in processes:
+            p.join()
+        flush()
+
+    else:
+        if mode == 'mag':                                   # Obtain inidividual mag plots
+            X = preprocess.get_magnitude(X)
+            for i in range(len(X)):
+                get_mag_plot(index=i, class_labels=class_labels, source_dir=source_dir, X=X, Y=Y)
+        
+        if mode == 'stft':                                      # Obtain individual stft plots
+            for i in range(len(X)):
+                get_single_stft_plot(index=i, class_labels=class_labels, source_dir=source_dir, X=X, Y=Y)
+
+        if mode == 'stft_compare':                  # Compare stft of different gestures
+            get_stft_comparison_plot(index=np.random.randint([0,250,500,750], [250,500,750,1000]), 
+                                    class_labels=class_labels, X=X, Y=Y)
+
+if __name__ == "__main__":
     import radar
-    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
+    source_dir = '2021_10_13_data'
+    X, Y, class_labels = radar.getTrainData(source_dir=source_dir)
     print(X.shape, Y.shape, class_labels)
-    get_stft_plot(index=np.random.randint([0,250,500,750], [250,500,750,1000]), class_labels=class_labels)
+
+    # Mode = 'mag'/'stft'/'stft_compare'
+    choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=True, 
+                 mode='stft', number=[500, 1001, 100])
+
     # X_STFT = get_mfcc(X)
     # print(X_STFT.shape)
     # X_input = reshape_features(X_STFT, type='dl')
