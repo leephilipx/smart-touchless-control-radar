@@ -44,14 +44,23 @@ def get_stft(radarData):
     # Doppler window for FFT sidelobe suppression and STFT
     NOverlap = round(NFFT*overlapPercent);                   # Number of overlapping points
     window = signal.windows.taylor(NFFT, nbar=10, sll=80, norm=False)
-    dAxis, tAxis, STFT = signal.spectrogram(radar1D, axis=0, fs=Fs, window=window, noverlap=NOverlap, nfft=NFFT, nperseg=NFFT)     
+    dAxis, tAxis, STFT = signal.spectrogram(radar1D, axis=0, fs=Fs, window=window, noverlap=NOverlap, 
+                                            nfft=NFFT, nperseg=NFFT, mode='complex')     
 
     # Frequency shifting and representation of magnitude in dB
     STFTShift = np.fft.fftshift(STFT, axes=0)                # fftshift means 0 Doppler frequency is at center
     STFTShiftDB = 20 * np.log10(np.abs(STFTShift))           # Represent in dB
     STFTShiftDB = STFTShiftDB - np.max(STFTShiftDB)          # Normalize data to max value (i.e., the max value is 0dB)
 
-    return resize(STFTShiftDB, dsize=(STFTShiftDB.shape[1], STFTShiftDB.shape[1]))
+    dAxis = np.fft.fftshift(dAxis)
+    ind_min = np.argmax(dAxis > -2000)
+    ind_max = np.argmax(dAxis > 2000)
+
+    STFTFinal = STFTShiftDB[ind_min:ind_max, :]
+    STFTFinal = np.where(STFTFinal < -40, -40, STFTFinal)
+    STFTFinal = np.where(STFTFinal > -3, -3, STFTFinal)
+    STFTFinal = np.repeat(STFTFinal, 10, axis=1)
+    return STFTFinal
 
 def get_mfcc(radarData):
     radar1D = radarData.reshape(-1, 1).squeeze()
@@ -65,16 +74,26 @@ def get_batch(radarData, mode):
     elif mode == 'mfcc':
         return np.array([get_mfcc(radarData[i, :]) for i in range(Nsamples)])
 
-
 if __name__ == "__main__":
+    from datetime import datetime
+    import matplotlib.pyplot as plt
+
 
     import radar
-    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_11_data')
+    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
     print(X.shape, Y.shape, class_labels)
-    
-    X_STFT = get_mfcc(X)
-    print(X_STFT.shape)
-    X_input = reshape_features(X_STFT, type='dl')
-    print(X_input.shape)
-    y_one_hot = one_hot_dl(Y)
-    print(y_one_hot.shape)
+
+    now = datetime.now()
+    X_STFT = get_stft(X[0])
+    fig = plt.figure()
+    plt.imshow(X_STFT, cmap='jet', vmin=-40, vmax=-3, aspect='auto', origin='lower')
+    plt.axis('off')
+    print(datetime.now() - now)
+    plt.show()
+
+    # code in between
+    # print(X_STFT.shape)
+    # X_input = reshape_features(X_STFT, type='dl')
+    # print(X_input.shape)
+    # y_one_hot = one_hot_dl(Y)
+    # print(y_one_hot.shape)

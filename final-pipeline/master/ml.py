@@ -9,6 +9,8 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.metrics import AUC
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.python.keras.saving import model_config
+from tensorflow.keras.applications import ResNet101
+from tensorflow.keras.applications.vgg16 import VGG16
 
 class MachineLearningModel():
 
@@ -97,11 +99,9 @@ class DeepLearningModel():
 
     def metrics(self, X, y, evaluate=True):
         if evaluate:
-            y_preds = self.model.predict(X)
-            acc = self.model.evaluate(X, y, batch_size=8)[-1]
-            auc = roc_auc_score(y, y_preds, multi_class='ovr')  
+            _, acc, auc = self.model.evaluate(X, y, batch_size=8)
         else:
-            acc = self.model.evaluate(X, y, batch_size=8)[-1]
+            acc = self.history.history['accuracy'][-1]
             auc = self.history.history['auc'][-1]
         return acc, auc
 
@@ -127,14 +127,38 @@ class DeepLearningModel():
         earlystopping = EarlyStopping(monitor='val_loss', patience=4)
         return [checkpoint, earlystopping]
 
+    def fake_tensorboard(self):
+        import matplotlib.pyplot as plt
+        plt.plot(self.history.history['accuracy'])
+        plt.plot(self.history.history['val_accuracy'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'validation'], loc='upper left')
+        plt.show()
+        # "Loss"
+        plt.plot(self.history.history['loss'])
+        plt.plot(self.history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'validation'], loc='upper left')
+        plt.show()
+    
 if __name__ == "__main__":
-
     # Get the data and preprocess it
     import radar, preprocess
     X, Y, class_labels = radar.getTrainData(source_dir='2021_10_11_data')
     print(X.shape, Y.shape, class_labels)
-    X_mag = preprocess.get_magnitude(X)
+    X_mag = preprocess.get_batch(X, mode='stft')
     # X_mag = preprocess.get_batch(X, mode='mfcc')
+
+    #### TAKE IMAGES ####
+    # from read_images import read_stft_plots
+    # X, Y, class_labels = read_stft_plots(folder='images_stft_old')
+    # print(X.shape, Y.shape, class_labels)
+    # X_mag = X
+
     X_input = preprocess.reshape_features(X_mag, 'dl')
     print(X_mag.shape, X_input.shape)
 
@@ -163,4 +187,5 @@ if __name__ == "__main__":
     test_acc, test_auc, y_preds = model.evaluate_batch(X_test, y_test_one_hot)
     print('Train-Test Acc =', train_acc, test_acc)
     print('Train-Test AUC =', train_auc, test_auc)
-    print(y_preds.shape)
+    print("Y_Preds", y_preds.shape)
+    model.fake_tensorboard()

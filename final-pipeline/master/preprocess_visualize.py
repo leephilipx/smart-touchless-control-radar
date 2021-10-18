@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from librosa.feature import mfcc
 from multiprocessing import Process
 import os
+import io
 import preprocess
 from atpbar import atpbar, flush, register_reporter, find_reporter
 
@@ -19,7 +20,8 @@ def get_stft(radarData):
     # Doppler window for FFT sidelobe suppression and STFT
     NOverlap = round(NFFT*overlapPercent);                   # Number of overlapping points
     window = signal.windows.taylor(NFFT, nbar=10, sll=80, norm=False)
-    dAxis, tAxis, STFT = signal.spectrogram(radar1D, axis=0, fs=Fs, window=window, noverlap=NOverlap, nfft=NFFT, nperseg=NFFT)     
+    dAxis, tAxis, STFT = signal.spectrogram(radar1D, axis=0, fs=Fs, window=window, noverlap=NOverlap, 
+                                            nfft=NFFT, nperseg=NFFT, mode='complex')     
     # Frequency shifting and representation of magnitude in dB
     STFTShift = np.fft.fftshift(STFT, axes=0)                # fftshift means 0 Doppler frequency is at center
     STFTShiftDB = 20 * np.log10(np.abs(STFTShift))           # Represent in dB
@@ -57,7 +59,7 @@ def get_single_stft_plot(X, Y, class_labels, index, source_dir):
     dAxis, tAxis, STFT = get_stft(x)
     dAxis = np.fft.fftshift(dAxis)               # Shift center as 0 Doppler frequency
     root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'project-files', 'radar_data', source_dir, 'images_stft')
-    plt.plot()
+    # fig = plt.figure()
     plt.pcolormesh(tAxis, dAxis/1e3, STFT, cmap='jet', vmin =-40, vmax = -3)
     plt.title(f'STFT: {label}-{str(index).zfill(3)}');
     plt.xlabel('Time (s)');
@@ -96,7 +98,7 @@ def choose_plots(X, Y, class_labels, source_dir, multiproc, mode, number):
         reporter = find_reporter()
         processes = []
         for index in range(*number):
-            p = Process(target=multiproc_loop, args=(mode, reporter, index, index+100, class_labels, 
+            p = Process(target=multiproc_loop, args=(mode, reporter, index, index+number[2], class_labels, 
                                                      source_dir, X, Y))
             processes.append(p)
             p.start()
@@ -111,7 +113,7 @@ def choose_plots(X, Y, class_labels, source_dir, multiproc, mode, number):
                 get_mag_plot(index=i, class_labels=class_labels, source_dir=source_dir, X=X, Y=Y)
         
         if mode == 'stft':                                      # Obtain individual stft plots
-            for i in range(len(X)):
+            for i in number:
                 get_single_stft_plot(index=i, class_labels=class_labels, source_dir=source_dir, X=X, Y=Y)
 
         if mode == 'stft_compare':                  # Compare stft of different gestures
@@ -125,8 +127,10 @@ if __name__ == "__main__":
     print(X.shape, Y.shape, class_labels)
 
     # Mode = 'mag'/'stft'/'stft_compare'
-    choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=True, 
-                 mode='stft', number=[500, 1001, 100])
+    choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=False, 
+                 mode='stft', number=[98, 99, 148, 149, 950])
+    # choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=True, 
+    #              mode='stft', number=[440, 500, 10])
 
     # X_STFT = get_mfcc(X)
     # print(X_STFT.shape)
