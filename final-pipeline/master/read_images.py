@@ -21,7 +21,7 @@ def read_prof_images():
 
     return np.array(X), np.array(Y), class_labels
 
-def read_stft_plots(folder='images_stft_old'):
+def read_stft_plots(folder):
     root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
                             'project-files', 'radar_data', '2021_10_13_data', folder)
     
@@ -41,7 +41,7 @@ def read_stft_plots(folder='images_stft_old'):
     return np.array(X), np.array(Y), class_labels
 
 if __name__ == "__main__":
-    X, Y, class_labels = read_stft_plots(folder='images_stft_old')
+    X, Y, class_labels = read_stft_plots(folder='images_stft')
     print(X.shape, Y.shape, class_labels)
     # X, Y, class_labels = read_our_radar_data()
     # print(X.shape, Y.shape, class_labels)

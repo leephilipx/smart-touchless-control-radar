@@ -56,16 +56,29 @@ def get_stft(radarData):
     ind_min = np.argmax(dAxis > -2000)
     ind_max = np.argmax(dAxis > 2000)
 
-    STFTFinal = STFTShiftDB[ind_min:ind_max, :]
+    STFTFinal = STFTShiftDB[ind_min:ind_max]
     STFTFinal = np.where(STFTFinal < -40, -40, STFTFinal)
     STFTFinal = np.where(STFTFinal > -3, -3, STFTFinal)
     STFTFinal = np.repeat(STFTFinal, 10, axis=1)
     return STFTFinal
 
+
 def get_mfcc(radarData):
-    radar1D = radarData.reshape(-1, 1).squeeze()
+
+    f0 = 60e9       	# radar operating frequency
+    Fs = 2*f0/1e6       # sampling frequency
+
+    radar1D = radarData.T.ravel()
     radar1D = radar1D - radar1D.mean()
-    return mfcc(np.real(radar1D), sr = 1, n_mfcc = 80)
+    mfcc_final = mfcc(np.real(radar1D), sr=30, n_mfcc=180)
+    # print(mfcc_final.shape, mfcc_final.max(), mfcc_final.min())
+    # mfcc_final = mfcc_final[3:20, 0:120]
+    mfcc_final = mfcc_final[::-1, :]
+    mfcc_final = np.where(mfcc_final < -20, -20, mfcc_final)
+    mfcc_final = np.where(mfcc_final > 100, 100, mfcc_final)
+    # mfcc_final = np.repeat(mfcc_final, 6.5, axis=0)
+    return mfcc_final
+
 
 def get_batch(radarData, mode):
     Nsamples = radarData.shape[0]
@@ -74,19 +87,23 @@ def get_batch(radarData, mode):
     elif mode == 'mfcc':
         return np.array([get_mfcc(radarData[i, :]) for i in range(Nsamples)])
 
+
 if __name__ == "__main__":
     from datetime import datetime
     import matplotlib.pyplot as plt
 
-
     import radar
-    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
+    # X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
+    # radar.cache('save', X, Y, class_labels)
+    X, Y, class_labels = radar.cache('load')
     print(X.shape, Y.shape, class_labels)
 
     now = datetime.now()
-    X_STFT = get_stft(X[0])
-    fig = plt.figure()
-    plt.imshow(X_STFT, cmap='jet', vmin=-40, vmax=-3, aspect='auto', origin='lower')
+    # X_STFT = get_stft(X[0])
+    X_STFT = get_mfcc(X[0])
+    plt.plot()
+    # plt.imshow(X_STFT, cmap='jet', vmin=-40, vmax=-3, aspect='auto', origin='lower')
+    plt.imshow(X_STFT, cmap='jet', aspect='auto', origin='lower')
     plt.axis('off')
     print(datetime.now() - now)
     plt.show()

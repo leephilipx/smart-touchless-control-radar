@@ -54,11 +54,12 @@ plt.figure(figsize = (4, 3))
 #plt.imshow(abs(mfccs), cmap='jet', interpolation = 'bilinear', 
 #           aspect = 'auto', vmin = -10, vmax = 25)
 
-plt.imshow(abs(mfccs), cmap='jet', interpolation = 'bilinear', 
-           aspect = 'auto', vmin = 0, vmax = 15)
+plt.imshow(abs(mfccs))
+# plt.imshow(abs(mfccs), cmap='jet', interpolation = 'bilinear', 
+#            aspect = 'auto', vmin = 0, vmax = 15)
 
 plt.gca().invert_yaxis()
-plt.axis([0, 120, 3, 20])
+# plt.axis([0, 120, 3, 20])
 plt.axis('off')
 #plt.yticks(np.arange(1, 31))
 #plt.xticks(0, len(d1))

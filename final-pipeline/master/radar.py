@@ -257,6 +257,14 @@ def getDatasetInfo(source_dir):
     return result
 
 
+def cache(mode, X=None, Y=None, class_labels=None):
+    if mode == 'save':
+        np.savez_compressed('dataset_cache.npz', X=X, Y=Y, class_labels=class_labels)
+    elif mode == 'load':
+        npfile = np.load('dataset_cache.npz')
+        return npfile['X'], npfile['Y'], npfile['class_labels']
+
+
 if __name__ == '__main__':
     radarSensor = AcconeerSensorLive(config_path='sensor_configs_final.json', port=None)
     port = radarSensor.autoconnect_serial_port()

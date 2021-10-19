@@ -6,7 +6,7 @@ import numpy as np
 if __name__ == "__main__":
 
     model = ml.DeepLearningModel(model_path='temp_checkpoint.h5')
-    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_16_testing_data_new')
+    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_13_data')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
     port = radarSensor.autoconnect_serial_port()
