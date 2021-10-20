@@ -18,6 +18,11 @@ if __name__ == "__main__":
     confidence_threshold = 0.7
     np.set_printoptions(suppress=True, precision=3)
 
+    # background = []
+    # for i in range(64):
+    #     background.append(radarSensor.get_next().ravel())
+    # background = np.expand_dims(np.array(background), axis=0)
+
     while True:
 
         try:
