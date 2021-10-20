@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')#'2021_10_13_testing_data_new')
     print(X.shape, Y.shape, class_labels)
-    
+    X, Y, class_labels = radar.cache('load')
     # X_mag = preprocess.get_magnitude(X)
     X_mag = preprocess.get_batch(X, mode='stft')
 

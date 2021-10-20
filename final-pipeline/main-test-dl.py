@@ -27,7 +27,7 @@ if __name__ == "__main__":
             if frame_buffer == 64:
                 frame_buffer = 0
                 # X_input = preprocess.get_magnitude(X_frame)
-                X_input = preprocess.get_batch(X_frame, mode='mfcc')
+                X_input = preprocess.get_batch(X_frame, mode='stft')
                 X_input = preprocess.reshape_features(X_input, type='dl')
                 y_probs = model.predict_proba(X_input)
                 # y_preds = np.where(y_probs > confidence_threshold, 1, 0)

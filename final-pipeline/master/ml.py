@@ -9,8 +9,7 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.metrics import AUC
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.python.keras.saving import model_config
-from tensorflow.keras.applications import ResNet101
-from tensorflow.keras.applications.vgg16 import VGG16
+from sklearn.decomposition import PCA
 
 class MachineLearningModel():
 
@@ -153,7 +152,7 @@ if __name__ == "__main__":
     X, Y, class_labels = radar.cache('load')
     print(X.shape, Y.shape, class_labels)
     # X_mag = preprocess.get_batch(X, mode='stft')
-    X_mag = preprocess.get_batch(X, mode='mfcc')
+    X_mag = preprocess.get_batch(X, mode='stft')
 
     #### TAKE IMAGES ####
     # from read_images import read_stft_plots
