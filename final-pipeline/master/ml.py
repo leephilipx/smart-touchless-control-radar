@@ -125,6 +125,9 @@ class DeepLearningModel():
                                      verbose=0, save_best_only=True, mode='min', save_weights_only=False)
         earlystopping = EarlyStopping(monitor='val_loss', patience=4)
         return [checkpoint, earlystopping]
+    
+    def save_model(self, path):
+        self.model.save(os.path.join(self.model_dir, path))
 
     def fake_tensorboard(self):
         import matplotlib.pyplot as plt
@@ -146,47 +149,60 @@ class DeepLearningModel():
     
 if __name__ == "__main__":
     # Get the data and preprocess it
+    deep = False
     import radar, preprocess
-    # X, Y, class_labels = radar.getTrainData(source_dir='2021_10_13_data')
+    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_20_data_new_gestures')
     # radar.cache('save', X, Y, class_labels)
-    X, Y, class_labels = radar.cache('load')
+    # X, Y, class_labels = radar.cache('load')
     print(X.shape, Y.shape, class_labels)
-    # X_mag = preprocess.get_batch(X, mode='stft')
-    X_mag = preprocess.get_batch(X, mode='stft')
+    X_features = preprocess.get_batch(X, mode='stft')
 
-    #### TAKE IMAGES ####
-    # from read_images import read_stft_plots
-    # X, Y, class_labels = read_stft_plots(folder='images_stft_old')
-    # print(X.shape, Y.shape, class_labels)
-    # X_mag = X
+    if deep:
+        X_input = preprocess.reshape_features(X_features, 'dl')
+        print(X_features.shape, X_input.shape)
 
-    X_input = preprocess.reshape_features(X_mag, 'dl')
-    print(X_mag.shape, X_input.shape)
-
+        model = DeepLearningModel()
+        X_train, X_test, y_train, y_test = model.train_test_split(X_input, Y, test_size=0.3, random_state=12)
+        y_train_one_hot, y_test_one_hot = preprocess.one_hot_dl([y_train, y_test])
+        print(y_train_one_hot.shape, y_test_one_hot.shape)
+        callbacks = model.instantiate_callbacks()
+        model.initialise_model(X_train, y_train_one_hot)
+        train_acc, train_auc = model.train_batch(X_train, y_train_one_hot, validation_data = (X_test, y_test_one_hot), epochs=20, batch_size=8, callbacks=callbacks)
+        model.save_model('stft-run1.h5')
+        test_acc, test_auc, y_preds = model.evaluate_batch(X_test, y_test_one_hot)
+        print('Train-Test Acc =', round(train_acc, 5), round(test_acc, 5))
+        print('Train-Test AUC =', round(train_auc, 5), round(test_auc, 5))
+        print("Y_Preds", y_preds.shape)
+        # model.fake_tensorboard()
+    else:
     # # ML model: sample train code
-    # from sklearn.neighbors import KNeighborsClassifier
-    # model = MachineLearningModel(sklearn_model=KNeighborsClassifier(n_neighbors=len(np.unique(Y))))
-    # X_train, X_test, y_train, y_test = model.train_test_split(X_input, Y, test_size=0.3, random_state=12)
-    # print('(train, test):', (len(y_train), len(y_test)))
-    # train_acc, train_auc = model.train_batch(X_train, y_train, model_path='knn.pkl')
-    # test_acc, test_auc, y_preds = model.evaluate_batch(X_test, y_test)
-    # print('Train-Test Acc =', train_acc, test_acc)
-    # print('Train-Test AUC =', train_auc, test_auc)
+        X_input = preprocess.reshape_features(X_features, 'ml')
+        print(X_features.shape, X_input.shape)
+        # from sklearn.neighbors import KNeighborsClassifier
+        # model = MachineLearningModel(sklearn_model=KNeighborsClassifier(n_neighbors=len(np.unique(Y))))
+        from sklearn.linear_model import LogisticRegression
+        model = MachineLearningModel(sklearn_model=LogisticRegression())
+        X_train, X_test, y_train, y_test = model.train_test_split(X_input, Y, test_size=0.3, random_state=12)
+        train_acc, train_auc = model.train_batch(X_train, y_train, model_path='log-reg.pkl')
+        test_acc, test_auc, y_preds = model.evaluate_batch(X_test, y_test)
+        print('Train-Test Acc =', round(train_acc,5), round(test_acc,5))
+        print('Train-Test AUC =', round(train_auc,5), round(test_auc,5))
+    
+        # # ML model: sample load model + predict code
+        # model = MachineLearningModel(model_path='knn.pkl')
+        # y_preds = model.predict(X_input)
+        # print(y_preds.shape)
 
-    # # ML model: sample load model + predict code
-    # model = MachineLearningModel(model_path='knn.pkl')
-    # y_preds = model.predict(X_input)
-    # print(y_preds.shape)
+        '''
+        from sklearn.neighbors import KNeighborsClassifier
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.naive_bayes import GaussianNB
+        from sklearn.linear_model import LogisticRegression
 
-    model = DeepLearningModel()
-    X_train, X_test, y_train, y_test = model.train_test_split(X_input, Y, test_size=0.3, random_state=12)
-    y_train_one_hot, y_test_one_hot = preprocess.one_hot_dl([y_train, y_test])
-    print(y_train_one_hot.shape, y_test_one_hot.shape)
-    callbacks = model.instantiate_callbacks()
-    model.initialise_model(X_train, y_train_one_hot)
-    train_acc, train_auc = model.train_batch(X_train, y_train_one_hot, validation_data = (X_test, y_test_one_hot), epochs=20, batch_size=8, callbacks=callbacks)
-    test_acc, test_auc, y_preds = model.evaluate_batch(X_test, y_test_one_hot)
-    print('Train-Test Acc =', round(train_acc, 5), round(test_acc, 5))
-    print('Train-Test AUC =', round(train_auc, 5), round(test_auc, 5))
-    print("Y_Preds", y_preds.shape)
-    # model.fake_tensorboard()
+        [train-acc, test-acc, train-auc, test-auc]
+        [0.97143, 0.96674, 0.99946, 0.99922] KNeighborsClassifier(n_neighbors=len(np.unique(Y)) 
+        [0.99333, 0.96231, 0.99993, 0.99843] RandomForestClassifier(max_depth=5)
+        [0,83714, 0.80710, 0.90494, 0.88612] GaussianNB()
+        [1.00000, 1.00000, 1.00000, 1.00000] LogisticRegression()
+        '''
+
