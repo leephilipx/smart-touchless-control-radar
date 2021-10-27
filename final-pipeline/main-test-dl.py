@@ -5,12 +5,12 @@ import numpy as np
 
 if __name__ == "__main__":
 
-    model = ml.DeepLearningModel(model_path='temp_checkpoint.h5')
-    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_13_data')
+    model = ml.DeepLearningModel(model_path='stft-run2.h5')
+    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_20_data_new_gestures')
 
-    radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final_old.json')
-    # port = radarSensor.autoconnect_serial_port()
-    port = '/dev/ttyUSB0'
+    radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
+    port = radarSensor.autoconnect_serial_port()
+    # port = '/dev/ttyUSB0']
     radarSensor.connect_serial(port)
     radarSensor.start_session()
     
