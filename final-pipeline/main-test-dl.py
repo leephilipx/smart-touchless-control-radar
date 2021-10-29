@@ -5,8 +5,8 @@ import numpy as np
 
 if __name__ == "__main__":
 
-    model = ml.DeepLearningModel(model_path='stft-run2.h5')
-    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_20_data_new_gestures')
+    model = ml.DeepLearningModel(model_path='stft-run-3-new-data.h5')
+    X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_27_data_new_gestures')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
     port = radarSensor.autoconnect_serial_port()
@@ -33,9 +33,9 @@ if __name__ == "__main__":
             X_frame = np.concatenate([X_frame[:, 1:, :], new_frame], axis=1)
             frame_buffer += 1
             
-            if frame_buffer >= (64-consensus_buffer):
-                # X_input = preprocess.get_magnitude(X_frame)
-                X_input = preprocess.get_batch(X_frame, mode='stft')
+            if frame_buffer >= (80-consensus_buffer):
+                X_input = preprocess.get_magnitude(X_frame)
+                # X_input = preprocess.get_batch(X_frame, mode='stft')
                 X_input = preprocess.reshape_features(X_input, type='dl')
                 y_probs = model.predict_proba(X_input)
                 # y_preds = np.where(y_probs > confidence_threshold, 1, 0)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
                 y_preds = np.argmax(y_probs)
                 # print(y_preds, class_labels[y_preds], np.squeeze(y_probs))
                 y_preds_buffer[y_preds] = y_preds_buffer[y_preds] + 1
-            if frame_buffer == (64+consensus_buffer):
+            if frame_buffer == (80+consensus_buffer):
                 frame_buffer = consensus_buffer
                 y_consensus = np.argmax(y_preds_buffer)
                 print(y_consensus, class_labels[y_consensus], np.squeeze(y_preds_buffer))

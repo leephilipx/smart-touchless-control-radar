@@ -123,7 +123,7 @@ def choose_plots(X, Y, class_labels, source_dir, multiproc, mode, number):
         flush()
 
     else:
-        if mode == 'mag':                                   # Obtain inidividual mag plots
+        if mode == 'mag':                                   # Obtain individual mag plots
             X = preprocess.get_magnitude(X)
             for i in range(len(X)):
                 get_mag_plot(index=i, class_labels=class_labels, source_dir=source_dir, X=X, Y=Y)
@@ -141,13 +141,13 @@ def choose_plots(X, Y, class_labels, source_dir, multiproc, mode, number):
 
 if __name__ == "__main__":
     import radar
-    source_dir = '2021_10_13_data'
+    source_dir = '2021_10_20_data_new_gestures'
     X, Y, class_labels = radar.getTrainData(source_dir=source_dir)
     print(X.shape, Y.shape, class_labels)
 
     # Mode = 'mag'/'stft'/'stft_compare'/'mfcc'
     choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=True, 
-                 mode='mfcc', number=[300, 401, 50])
+                 mode='mag', number=[0, 500, 100])
     # choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=True, 
     #              mode='stft', number=[440, 500, 10])
 

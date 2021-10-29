@@ -151,7 +151,7 @@ if __name__ == "__main__":
     # Get the data and preprocess it
     deep = True
     import radar, preprocess
-    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_20_data_new_gestures')
+    X, Y, class_labels = radar.getTrainData(source_dir='2021_10_27_data_new_gestures')
     # radar.cache('save', X, Y, class_labels)
     # X, Y, class_labels = radar.cache('load')
     print(X.shape, Y.shape, class_labels)
@@ -169,7 +169,7 @@ if __name__ == "__main__":
         callbacks = model.instantiate_callbacks()
         model.initialise_model(X_train, y_train_one_hot)
         train_acc, train_auc = model.train_batch(X_train, y_train_one_hot, validation_data = (X_test, y_test_one_hot), epochs=20, batch_size=8, callbacks=callbacks)
-        model.save_model('stft-run2.h5')
+        model.save_model('mag-run-3-new-data.h5')
         test_acc, test_auc, y_preds = model.evaluate_batch(X_test, y_test_one_hot)
         print('Train-Test Acc =', round(train_acc, 5), round(test_acc, 5))
         print('Train-Test AUC =', round(train_auc, 5), round(test_auc, 5))
