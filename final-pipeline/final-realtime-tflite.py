@@ -51,9 +51,9 @@ if __name__ == "__main__":
                 frame_buffer = 0
                 y_consensus = np.argmax(y_probs_buffer)
                 if y_probs_buffer.max() > (preds_threshold * (2*consensus_buffer+1)):
-                    print(f'center={x_center};  {y_consensus} {class_labels[y_consensus]}\t', np.squeeze(y_probs_buffer))
+                    print(f'center={x_center};  {y_consensus} {class_labels[y_consensus].ljust(12)}', np.squeeze(y_probs_buffer))
                 else:
-                    print(f'center={x_center};  - n/a\t', np.squeeze(y_probs_buffer))
+                    print(f'center={x_center};  - {"n/a".ljust(12)}', np.squeeze(y_probs_buffer))
                 y_probs_buffer = np.zeros((len(class_labels), ))
 
         except KeyboardInterrupt:

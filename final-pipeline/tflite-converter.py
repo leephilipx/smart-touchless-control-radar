@@ -2,7 +2,7 @@ import tensorflow as tf
 import os
 from tensorflow.keras.models import load_model
 
-model_path = 'mag-run1.h5'
+model_path = 'stft-final.h5'
 
 root_dir = os.path.join(os.path.dirname(__file__), 'master', 'models')
 model = load_model(os.path.join(root_dir, model_path))
