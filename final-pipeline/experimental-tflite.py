@@ -2,7 +2,8 @@ from master import radar, preprocess, ml
 from time import sleep
 import numpy as np
 import argparse
-
+import matplotlib.pyplot as plt
+from datetime import datetime
 
 def experimental_centering(radar_data, consensus_buffer):
 
@@ -20,7 +21,7 @@ if __name__ == "__main__":
     parser.add_argument('-rpi', '--rpi', action='store_true', help='Raspberry Pi mode to fix port')
     args = parser.parse_args()
 
-    model = ml.DeepLearningModel(model_path='mag-run1.tflite')
+    model = ml.DeepLearningModel(model_path='stft-run2.tflite')
     X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_20_data_new_gestures')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     
     X_frame = np.zeros((1, 80, X_shape[2]), dtype=np.complex128)
     frame_buffer = 0
-    consensus_buffer = 2
+    consensus_buffer = 0
     y_probs_buffer = np.zeros((len(class_labels), ))
     np.set_printoptions(suppress=True, precision=3)
 
@@ -44,15 +45,17 @@ if __name__ == "__main__":
             if frame_buffer == 80:
 
                 x_center = experimental_centering(X_frame, consensus_buffer)
+                now = datetime.now()
 
                 for offset in range(-consensus_buffer, consensus_buffer+1):
                     X_input = X_frame[:, x_center+offset-32:x_center+offset+32, :]
-                    X_input = preprocess.get_magnitude(X_input)
-                    # X_input = preprocess.get_batch(X_input, mode='stft')
+                    # X_input = preprocess.get_magnitude(X_input)
+                    X_input = preprocess.get_batch(X_input, mode='stft')
                     X_input = preprocess.reshape_features(X_input, type='dl')
                     y_probs = model.predict_tflite(X_input)
                     y_probs_buffer = y_probs_buffer + y_probs
-
+                
+                print(datetime.now() - now)
                 frame_buffer = 0
                 y_consensus = np.argmax(y_probs_buffer)
                 print(f'center={x_center};  {y_consensus} {class_labels[y_consensus]}\t', np.squeeze(y_probs_buffer))
