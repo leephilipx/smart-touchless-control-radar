@@ -88,6 +88,16 @@ def get_batch(radarData, mode):
         return np.array([get_mfcc(radarData[i, :]) for i in range(Nsamples)])
 
 
+def get_frame_center(radar_data, consensus_buffer):
+
+    radar_mag = np.abs(np.squeeze(radar_data)).T
+    radar_mag = radar_mag / np.max(radar_mag)
+    x_coords = np.unique(np.where(radar_mag>0.4)[1])
+    x_center = np.round(np.mean(x_coords), decimals=0).astype(int)
+
+    return np.clip(x_center, 32+consensus_buffer, 48-consensus_buffer)
+
+
 if __name__ == "__main__":
     from datetime import datetime
     import matplotlib.pyplot as plt
