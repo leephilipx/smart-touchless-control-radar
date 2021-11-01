@@ -25,17 +25,18 @@
 <br>
 
 ## Key Dates
-- [x] Week 4: Deadline for *Project Charter*
-- [ ] Week 13: Deadline for *Project Report*
-- [ ] Week 13: Deadline for *Peer Review*
-- [ ] Week 14: *DIP Competition*
+- [x] Week 4 Fri: Deadline for *Project Charter*
+- [ ] Week 13 Mon: Deadline for *Project Report*
+- [ ] Week 13 Fri: Deadline for *Group Blogs*
+- [ ] Week 13 Fri: Deadline for *Peer Review*
+- [ ] Week 14 Mon: *DIP Competition*
 
 <br>
 
 ## GUI for Gesture Extraction
- - `gui-dip-demo/gesture_extractor_gui.py` is a Python script developed by Philip to automate the process of extracting gesture samples from a continous recording obtained from the GUI tool provided by Acconeer. This fixes the alignment issue faced when recording one sample at a time.
+ - `final-pipeline/gesture_extractor_gui.py` is a Python script developed by Philip to automate the process of extracting gesture samples from a continous recording obtained from the GUI tool provided by Acconeer. This fixes the alignment issue faced when recording one sample at a time.
  - The tool saves extracted samples in `.npz` format with the intention of a small file size. To read data from these new files, please use `np.load('filename-000.npz')['sample']`, where *filename* is a placeholder.
- - For ease of running the tool, an alternative Windows executable file `gui-dip-demo/gesture_extractor_gui.exe` is available too.  
+ - For ease of running the tool, an alternative Windows executable file `final-pipeline/gesture_extractor_gui.exe` is available too.  
      
    <img src="./admin-files/weekly_updates/Week 7 Gesture Extractor GUI Tool.png" height="300px"/>  
 
@@ -52,7 +53,7 @@ optional arguments:
 <br>
 
 ## GUI for Data Collection (needs fixing)
- - `gui-dip-demo/daq_menu_v1.py` is a Python script developed by Philip and Wai Yeong via *Tkinter* and *Acconeer SDK* to assist in automating the process of recording and saving radar data in IQ format.  
+ - `master/gui-dip-demo/daq_menu_v1.py` is a Python script developed by Philip and Wai Yeong via *Tkinter* and *Acconeer SDK* to assist in automating the process of recording and saving radar data in IQ format.  
      
    <img src="./admin-files/weekly_updates/Week 7 Data Collection GUI Tool.png" height="400px"/>  
 
