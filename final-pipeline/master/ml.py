@@ -174,7 +174,7 @@ if __name__ == "__main__":
         print('Train-Test Acc =', round(train_acc, 5), round(test_acc, 5))
         print('Train-Test AUC =', round(train_auc, 5), round(test_auc, 5))
         print("Y_Preds", y_preds.shape)
-        # model.fake_tensorboard()
+        model.fake_tensorboard()
     else:
     # # ML model: sample train code
         X_input = preprocess.reshape_features(X_features, 'ml')
