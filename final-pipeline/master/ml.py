@@ -8,8 +8,7 @@ from tensorflow.keras.layers import Input, Flatten, Dense, Conv2D, MaxPooling2D
 from tensorflow.keras.layers import *
 from tensorflow.keras.metrics import AUC
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from tensorflow.python.keras.saving import model_config
-from sklearn.decomposition import PCA
+from tensorflow import lite
 
 class MachineLearningModel():
 
@@ -70,7 +69,10 @@ class DeepLearningModel():
         self.root_dir = os.path.dirname(__file__)
         self.model_dir = os.path.join(self.root_dir, 'models')
         if 'model_path' in kwargs:
-            self.load_saved_model(kwargs['model_path'])
+            if kwargs['model_path'].endswith('.tflite'):
+                self.load_tflite_model(kwargs['model_path'])
+            else:
+                self.load_saved_model(kwargs['model_path'])
     
     def train_test_split(self, X, y, test_size, random_state):
         '''
@@ -146,6 +148,19 @@ class DeepLearningModel():
         plt.xlabel('epoch')
         plt.legend(['train', 'validation'], loc='upper left')
         plt.show()
+
+    def load_tflite_model(self, model_path):
+        assert model_path.endswith('.tflite'), 'Unknown model_path'
+        self.interpreter = lite.Interpreter(os.path.join(self.model_dir, model_path))
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        return self.interpreter
+
+    def predict_tflite(self, features):
+        self.interpreter.allocate_tensors()
+        self.interpreter.set_tensor(self.input_details[0]['index'], features.astype(np.float32))
+        self.interpreter.invoke()
+        return self.interpreter.get_tensor(self.output_details[0]['index'])
     
 if __name__ == "__main__":
     # Get the data and preprocess it
