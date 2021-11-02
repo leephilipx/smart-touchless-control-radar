@@ -2,6 +2,7 @@ from master import radar, preprocess, ml
 from time import sleep
 import numpy as np
 import argparse
+from pyautogui import press
 # from datetime import datetime
 
 import warnings
@@ -12,6 +13,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='DIP E047: Final Real-time Gesture Prediction')
     parser.add_argument('-rpi', '--rpi', action='store_true', help='Raspberry Pi mode to fix port')
+    parser.add_argument('-kb', '--kb', action='store_true', help='Keyboard presses')
     args = parser.parse_args()
 
     model_dl = ml.DeepLearningModel(model_path='stft-final.tflite')
@@ -38,7 +40,8 @@ if __name__ == "__main__":
             frame_buffer += 1
             
             if frame_buffer == 80:
-
+                
+                press('.')
                 x_center = preprocess.get_frame_center(X_frame, consensus_buffer)
                 # now = datetime.now()
 
@@ -57,8 +60,10 @@ if __name__ == "__main__":
                 y_consensus = np.argmax(y_probs_buffer)
                 if y_probs_buffer.max() > (preds_threshold * (2*consensus_buffer+1) * 2):
                     print(f'center={x_center};  {y_consensus} {class_labels[y_consensus].ljust(12)}', np.squeeze(y_probs_buffer))
+                    if args.kb: press(str(y_consensus))
                 else:
                     print(f'center={x_center};  - {"n/a".ljust(12)}', np.squeeze(y_probs_buffer))
+                    if args.kb: press('/')
                 y_probs_buffer = np.zeros((len(class_labels), ))
 
         except KeyboardInterrupt:
