@@ -4,7 +4,7 @@ import numpy as np
     
 if __name__ == "__main__":
 
-    deep = True
+    deep = False
     # Get the data and preprocess it
     X, Y, class_labels = radar.getTrainData(source_dir='2021_10_20_data_new_gestures')
     # radar.cache('save', X, Y, class_labels)

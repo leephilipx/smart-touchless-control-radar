@@ -2,8 +2,10 @@ from master import radar, preprocess, ml
 from time import sleep
 import numpy as np
 import argparse
-import matplotlib.pyplot as plt
-from datetime import datetime
+# from datetime import datetime
+
+import warnings
+warnings.filterwarnings("ignore")
 
 
 if __name__ == "__main__":
