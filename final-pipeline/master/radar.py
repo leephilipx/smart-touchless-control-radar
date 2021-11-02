@@ -271,5 +271,5 @@ if __name__ == '__main__':
     # radarSensor.connect_serial(port)
     # radarSensor.start_session()
     # radarSensor.get_next()
-    # X, Y, class_labels = getTrainData(source_dir='2021_10_13_data')
-    print(getDatasetInfo(source_dir='2021_10_13_data'))
+    X, Y, class_labels = getTrainData(source_dir='2021_10_20_data_new_gestures')
+    print(getDatasetInfo(source_dir='2021_10_20_data_new_gestures'))
