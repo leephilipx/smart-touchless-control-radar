@@ -40,7 +40,7 @@ if __name__ == "__main__":
             
             if frame_buffer == 80:
                 
-                press('.')
+                if args.kb: press('.')
                 x_center = preprocess.get_frame_center(X_frame, consensus_buffer)
 
                 for offset in range(-consensus_buffer, consensus_buffer+1):
