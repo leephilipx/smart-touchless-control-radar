@@ -197,6 +197,8 @@ class Menu:
             self.info_text.set(f'{self.menu_names[self.selection_counter_l]} removed')
             self.menu_qty[self.selection_counter_l] = self.menu_qty[self.selection_counter_l] - 1
             self.update_cart()
+        else:
+            self.info_text.set(f'No {self.menu_names[self.selection_counter_l]} in cart')
 
     def scroll_selection_l(self, step=1):
         self.selection_counter_l = (self.selection_counter_l + step) % self.menu_total_items
