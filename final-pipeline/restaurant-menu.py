@@ -11,9 +11,9 @@ class Menu:
 
         self.mainframe = Frame(root)
         root.title('Restaurant Menu')
-        root.geometry('800x600')
+        # root.geometry('800x800')
         self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-        self.mainframe.pack(expand=True, fill='both', anchor='center')
+        # self.mainframe.pack(expand=True, fill='both', anchor='center')
 
         self.root_path = os.path.dirname(__file__)
         self.path = os.path.join(self.root_path, 'ui_elements')
@@ -197,4 +197,5 @@ class Menu:
 
 root = Tk()
 app = Menu(root)
+
 root.mainloop()
