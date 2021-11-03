@@ -99,6 +99,7 @@ class Menu:
         self.gesture_label = tk.Label(self.right_column, textvariable=self.gesture_text, bg='black', fg='white', font=('Courier', 10))
         self.gesture_label.grid(row=0, column=0, sticky=(E,W), columnspan=2)
         self.info_text = tk.StringVar()
+        self.info_text.set('Please select your item')
         self.info_label = tk.Label(self.right_column, textvariable=self.info_text, font=('Courier', 8), fg='red', bg='white')
         self.info_label.grid(row=1, column=0, sticky=(E,W), columnspan=2, pady=10)
         self.cart = tk.Label(self.right_column, text='          Cart          ', bg='white', font=('Courier', 10))
@@ -158,11 +159,10 @@ class Menu:
 
             elif self.selection_mode == 3 or self.selection_mode == 4:
                 if event.char == '2':
-                    self.info_text.set('')
                     self.selection_mode -= 2
                     self.function_aft_confirm()
                 if event.char == '4':
-                    self.info_text.set('')
+                    self.info_text.set('Operation cancelled')
                     self.selection_mode -= 2
 
     def confirm(self, func):
@@ -174,7 +174,7 @@ class Menu:
         self.selection_mode = 1 if self.selection_mode == 2 else 2
         if self.selection_mode == 1:
             for i in range(self.menu_max):
-                self.borders_l[i].config(bg='blue' if i==self.selection_counter_l else 'white')
+                self.borders_l[i].config(bg='blue' if i==(self.selection_counter_l-self.selection_offset) else 'white')
             for i in range(3):
                 self.borders_r[i].config(fg='green' if i==self.selection_counter_r else 'black')
         elif self.selection_mode == 2:
@@ -188,11 +188,13 @@ class Menu:
         self.cart_text.set('\n'.join([f'{name.ljust(20)}x {str(qty).rjust(2)}' for name, qty in zip(self.menu_names, self.menu_qty) if qty > 0]))
 
     def order(self):
+        self.info_text.set(f'{self.menu_names[self.selection_counter_l]} added')
         self.menu_qty[self.selection_counter_l] = self.menu_qty[self.selection_counter_l] + 1
         self.update_cart()
 
     def cancel(self):
         if self.menu_qty[self.selection_counter_l] > 0:
+            self.info_text.set(f'{self.menu_names[self.selection_counter_l]} removed')
             self.menu_qty[self.selection_counter_l] = self.menu_qty[self.selection_counter_l] - 1
             self.update_cart()
 
