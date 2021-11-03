@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     # Mode = 'mag'/'stft'/'stft_compare'/'mfcc'
     choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=True, 
-                 mode='stft', number=[1000, 1300, 100])
+                 mode='mfcc', number=[0, 500, 100])
     # choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=True, 
     #              mode='stft', number=[440, 500, 10])
 

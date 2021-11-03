@@ -24,7 +24,7 @@ class Menu:
         self.create_left_widgets()
         self.create_right_widgets()
         ttk.Separator(self.mainframe, orient=HORIZONTAL).grid(row=3, column=0, columnspan=3, sticky=(E,W))
-        self.bottom = tk.Label(self.mainframe, text='push: select  |  swipedown/waving: next/prev  |  holdit: return', bg='white', font=('Courier', 8))
+        self.bottom = tk.Label(self.mainframe, text='holdit[1]: return  |  push[2]: select  |  swipedown[3]/waving[4]: next/prev', bg='white', font=('Courier', 8))
         self.bottom.grid(row=4, column=0, sticky=(E,W), columnspan=3)
         self.binding_events(root)
         self.selection_counter_l = 0
@@ -125,6 +125,7 @@ class Menu:
         root.bind('3', lambda event: self.keypress_handler(event))
         root.bind('4', lambda event: self.keypress_handler(event))
         root.bind('.', lambda event: self.keypress_handler(event))
+        root.bind('/', lambda event: self.keypress_handler(event))
     
     def flicker(self):
         sleep(0.3)
@@ -198,7 +199,7 @@ class Menu:
             self.menu_qty[self.selection_counter_l] = self.menu_qty[self.selection_counter_l] - 1
             self.update_cart()
         else:
-            self.info_text.set(f'No {self.menu_names[self.selection_counter_l]} in cart')
+            self.info_text.set(f'{self.menu_names[self.selection_counter_l]} not in cart')
 
     def scroll_selection_l(self, step=1):
         self.selection_counter_l = (self.selection_counter_l + step) % self.menu_total_items
