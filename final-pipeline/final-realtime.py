@@ -1,11 +1,11 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 from master import radar, preprocess, ml
 from time import sleep
 import numpy as np
 import argparse
 from pyautogui import press
-
-import warnings
-warnings.filterwarnings("ignore")
 
 
 if __name__ == "__main__":
@@ -19,8 +19,8 @@ if __name__ == "__main__":
     X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_20_data_new_gestures')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
-    port = radarSensor.autoconnect_serial_port()
-    radarSensor.connect_serial('/dev/ttyUSB0' if args.rpi else port)
+    port = '/dev/ttyUSB0' if args.rpi else radarSensor.autoconnect_serial_port()
+    radarSensor.connect_serial(port)
     radarSensor.start_session()
     
     X_frame = np.zeros((1, 80, X_shape[2]), dtype=complex)
@@ -70,8 +70,8 @@ if __name__ == "__main__":
                 sleep(5)
                 radarSensor.stop_session(verbose=False)
                 radarSensor.disconnect_serial(verbose=False)
-                port = radarSensor.autoconnect_serial_port()
-                radarSensor.connect_serial('/dev/ttyUSB0' if args.rpi else port)
+                port = '/dev/ttyUSB0' if args.rpi else radarSensor.autoconnect_serial_port()
+                radarSensor.connect_serial(port)
                 radarSensor.start_session()
             except KeyboardInterrupt:
                 print('>> KeyboardInterrupt caught! Exiting ...')

@@ -1,0 +1,13 @@
+setuptools
+packaging
+wheel
+numpy==1.19.3
+scipy
+pyserial==3.5
+matplotlib==3.4.1
+h5py
+pyyaml
+attrs
+docutils
+librosa
+opencv-python
