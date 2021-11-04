@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser.add_argument('-kb', '--kb', action='store_true', help='Keyboard presses')
     args = parser.parse_args()
 
-    model = ml.DeepLearningModel(model_path='mfcc-run2.tflite')
+    model = ml.DeepLearningModel(model_path='stft-final.tflite')
     X_shape, Y_shape, class_labels = radar.getDatasetInfo(source_dir='2021_10_20_data_new_gestures')
 
     radarSensor = radar.AcconeerSensorLive(config_path='sensor_configs_final.json')
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
                 for offset in range(-consensus_buffer, consensus_buffer+1):
                     X_input = X_frame[:, x_center+offset-32:x_center+offset+32, :]
-                    X_input = preprocess.get_batch(X_input, mode='mfcc')
+                    X_input = preprocess.get_batch(X_input, mode='stft')
                     X_input = preprocess.reshape_features(X_input, type='dl')
                     y_probs = model.predict_tflite(X_input)
                     y_probs_buffer = y_probs_buffer + y_probs
