@@ -70,6 +70,7 @@ def get_mfcc(radarData):
 
     radar1D = radarData.T.ravel()
     radar1D = radar1D - radar1D.mean()
+    # mfcc_final = mfcc(np.real(radar1D), sr=30, n_mfcc=20, n_fft=4096, hop_length=2048, n_mels=128)
     mfcc_final = mfcc(np.real(radar1D), sr=30, n_mfcc=180)
     # print(mfcc_final.shape, mfcc_final.max(), mfcc_final.min())
     # mfcc_final = mfcc_final[3:20, 0:120]
@@ -86,7 +87,8 @@ def get_batch(radarData, mode):
         return np.array([get_stft(radarData[i, :]) for i in range(Nsamples)])
     elif mode == 'mfcc':
         return np.array([get_mfcc(radarData[i, :]) for i in range(Nsamples)])
-
+    elif mode == 'mag':
+        return get_magnitude(radarData)
 
 def get_frame_center(radar_data, consensus_buffer):
 

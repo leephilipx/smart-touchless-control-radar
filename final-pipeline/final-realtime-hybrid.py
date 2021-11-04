@@ -47,7 +47,6 @@ if __name__ == "__main__":
 
                 for offset in range(-consensus_buffer, consensus_buffer+1):
                     X_input = X_frame[:, x_center+offset-32:x_center+offset+32, :]
-                    # X_input = preprocess.get_magnitude(X_input)
                     X_input = preprocess.get_batch(X_input, mode='stft')
                     X_input_dl = preprocess.reshape_features(X_input, type='dl')
                     X_input_ml = preprocess.reshape_features(X_input, type='ml')

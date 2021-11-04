@@ -61,7 +61,7 @@ def get_single_stft_plot(X, Y, class_labels, index, source_dir):
     plt.title(f'STFT: {label}-{str(index).zfill(3)}');
     plt.xlabel('Time (s)');
     plt.ylabel('Doppler (kHz)');
-    plt.xlim((0,0.5));
+    # plt.xlim((0,0.5));
     plt.ylim((-2,2));
     # plt.show();
     plt.savefig(os.path.join(root_dir, f'{label}-{str(index).zfill(3)}.jpg'))
@@ -93,8 +93,8 @@ def get_mfcc_plot(index, class_labels, source_dir, X, Y):
     plt.title(f'MFCC: {label}-{str(index).zfill(3)}');
     plt.xlabel('Time'); 
     plt.ylabel('MFCC');
-    # plt.show();
-    plt.savefig(os.path.join(root_dir, f'{label}-{str(index).zfill(3)}.jpg'))
+    plt.show();
+    # plt.savefig(os.path.join(root_dir, f'{label}-{str(index).zfill(3)}.jpg'))
 
 def multiproc_loop(mode, reporter, start, stop, class_labels, source_dir, X, Y):
     register_reporter(reporter)
@@ -146,14 +146,7 @@ if __name__ == "__main__":
     print(X.shape, Y.shape, class_labels)
 
     # Mode = 'mag'/'stft'/'stft_compare'/'mfcc'
+    # choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=False, 
+    #              mode='mfcc', number=[250,500,750,1000,1250])
     choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=True, 
-                 mode='mfcc', number=[0, 500, 100])
-    # choose_plots(X=X, Y=Y, class_labels=class_labels, source_dir=source_dir, multiproc=True, 
-    #              mode='stft', number=[440, 500, 10])
-
-    # X_STFT = get_mfcc(X)
-    # print(X_STFT.shape)
-    # X_input = reshape_features(X_STFT, type='dl')
-    # print(X_input.shape)
-    # y_one_hot = one_hot_dl(Y)
-    # print(y_one_hot.shape)
+                 mode='stft', number=[1000, 1300, 50])
