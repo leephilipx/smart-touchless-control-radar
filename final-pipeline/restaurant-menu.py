@@ -24,8 +24,9 @@ class Menu:
         self.create_left_widgets()
         self.create_right_widgets()
         ttk.Separator(self.mainframe, orient=HORIZONTAL).grid(row=3, column=0, columnspan=3, sticky=(E,W))
-        self.bottom = tk.Label(self.mainframe, text='holdit[1]: return  |  push[2]: select  |  swipedown[3]/waving[4]: next/prev', bg='white', font=('Courier', 8))
+        self.bottom = tk.Label(self.mainframe, text='holdit[1]: return  |  push[2]: select  |  swipedown[3]/waving[4]: next/prev', bg='white', font=('Courier', 9))
         self.bottom.grid(row=4, column=0, sticky=(E,W), columnspan=3)
+        ttk.Separator(self.mainframe, orient=HORIZONTAL).grid(row=5, column=0, columnspan=3, sticky=(E,W))
         self.binding_events(root)
         self.selection_counter_l = 0
         self.selection_counter_r = 0
@@ -35,6 +36,7 @@ class Menu:
         self.selection_mode = 1
         self.toggle_menu()
         self.prev_char = '.'
+        self.gesture_mode_bool = False
 
 
     def menu_parser(self):
@@ -96,26 +98,26 @@ class Menu:
         self.right_column.grid_rowconfigure(3, weight=1)
         self.gesture_text = tk.StringVar()
         self.gesture_text.set(f"Gesture: {'n/a'.center(10)}")
-        self.gesture_label = tk.Label(self.right_column, textvariable=self.gesture_text, bg='black', fg='white', font=('Courier', 10))
+        self.gesture_label = tk.Label(self.right_column, textvariable=self.gesture_text, bg='black', fg='white', font=('Courier', 11, 'bold'))
         self.gesture_label.grid(row=0, column=0, sticky=(E,W), columnspan=2)
         self.info_text = tk.StringVar()
         self.info_text.set('Please select your item')
-        self.info_label = tk.Label(self.right_column, textvariable=self.info_text, font=('Courier', 8), fg='red', bg='white')
+        self.info_label = tk.Label(self.right_column, textvariable=self.info_text, font=('Courier', 9), fg='red', bg='white')
         self.info_label.grid(row=1, column=0, sticky=(E,W), columnspan=2, pady=10)
-        self.cart = tk.Label(self.right_column, text='          Cart          ', bg='white', font=('Courier', 10))
+        self.cart = tk.Label(self.right_column, text='           Cart           ', bg='white', font=('Courier', 11, 'bold'))
         self.cart.grid(row=2, column=0, sticky=(E,W), columnspan=2)
         self.cart_text = tk.StringVar()
-        self.item = tk.Label(self.right_column, textvariable=self.cart_text, bg='white', font=('Courier', 8))
+        self.item = tk.Label(self.right_column, textvariable=self.cart_text, bg='white', font=('Courier', 9))
         self.item.grid(row=3, column=0, sticky=(N,E,W), columnspan=2)
         self.total_price_text = tk.StringVar()
         self.total_price_text.set('Total Bill: $0.00')
-        self.total_price_label = tk.Label(self.right_column, textvariable=self.total_price_text, bg='white', font=('Courier', 9))
+        self.total_price_label = tk.Label(self.right_column, textvariable=self.total_price_text, bg='white', font=('Courier', 10))
         self.total_price_label.grid(row=4, column=0, sticky=(E,W), columnspan=2, pady=10)
-        self.borders_r[0] = tk.Button(self.right_column, text='Add Item', font=('Courier', 8))
+        self.borders_r[0] = tk.Button(self.right_column, text='Add Item', font=('Courier', 9, 'bold'))
         self.borders_r[0].grid(row=5, column=0, sticky=(E,W))
-        self.borders_r[1] = tk.Button(self.right_column, text='Cancel', font=('Courier', 8))
+        self.borders_r[1] = tk.Button(self.right_column, text='Cancel', font=('Courier', 9, 'bold'))
         self.borders_r[1].grid(row=5, column=1, sticky=(E,W))
-        self.borders_r[2] = tk.Button(self.right_column, text='Submit Order', font=('Courier', 8))
+        self.borders_r[2] = tk.Button(self.right_column, text='Submit Order', font=('Courier', 9, 'bold'))
         self.borders_r[2].grid(row=6, column=0, columnspan=2, sticky=(E,W))
 
     def binding_events(self, root):
@@ -126,19 +128,28 @@ class Menu:
         root.bind('4', lambda event: self.keypress_handler(event))
         root.bind('.', lambda event: self.keypress_handler(event))
         root.bind('/', lambda event: self.keypress_handler(event))
+        root.bind('<space>', lambda event: self.keypress_handler(event))
     
     def flicker(self):
         sleep(0.3)
         self.gesture_label.config(bg='black')
 
     def keypress_handler(self, event):
-        if event.char == '/':
+        if event.char == ' ':
+            self.gesture_mode_bool = not self.gesture_mode_bool
+            if self.gesture_mode_bool:
+                self.prev_info_text = self.info_text.get()
+                self.info_text.set(f'Gesture Mode ON!')
+            else:
+                self.info_text.set(self.prev_info_text)
+        elif event.char == '/':
             self.gesture_text.set(f"Gesture: {'n/a'.center(10)}")
         elif event.char == '.':
             self.gesture_label.config(bg='green')
             Thread(target=self.flicker).start()
         else:
             self.gesture_text.set(f'Gesture: {self.gestures_list[int(event.char)].center(10)}')
+            if self.gesture_mode_bool: return
             self.prev_char = event.char
             # selection_mode: 1 - left menu, 2 - right menu, 3/4 - confirm menu
             if self.selection_mode == 1:
@@ -175,14 +186,14 @@ class Menu:
         self.selection_mode = 1 if self.selection_mode == 2 else 2
         if self.selection_mode == 1:
             for i in range(self.menu_max):
-                self.borders_l[i].config(bg='blue' if i==(self.selection_counter_l-self.selection_offset) else 'white')
+                self.borders_l[i].config(bg='red' if i==(self.selection_counter_l-self.selection_offset) else 'white')
             for i in range(3):
                 self.borders_r[i].config(fg='green' if i==self.selection_counter_r else 'black')
         elif self.selection_mode == 2:
             for i in range(self.menu_max):
                 self.borders_l[i].config(bg='white')
             for i in range(3):
-                self.borders_r[i].config(fg='blue' if i==self.selection_counter_r else 'black')
+                self.borders_r[i].config(fg='red' if i==self.selection_counter_r else 'black')
 
     def update_cart(self):
         self.total_price_text.set(f'Total Bill: ${np.sum(self.menu_prices*self.menu_qty):.2f}')
@@ -205,7 +216,7 @@ class Menu:
         self.selection_counter_l = (self.selection_counter_l + step) % self.menu_total_items
         self.selection_offset = self.selection_counter_l // self.menu_max * 4
         for i in range(self.menu_max):
-            self.borders_l[i].config(bg='blue' if i==(self.selection_counter_l-self.selection_offset) else 'white')
+            self.borders_l[i].config(bg='red' if i==(self.selection_counter_l-self.selection_offset) else 'white')
             self.name_labels[i]['text'] = self.menu_names[i+self.selection_offset]
             self.price_labels[i]['text'] = f'${self.menu_prices[i+self.selection_offset]:.2f}' if self.menu_prices[i+self.selection_offset] > 0 else ''
             self.desc_labels[i]['text'] = self.menu_descs[i+self.selection_offset]
@@ -215,7 +226,7 @@ class Menu:
         self.selection_counter_r = (self.selection_counter_r + step) % 3
         for i in range(3):
             self.borders_r[i]['state'] = NORMAL if i==self.selection_counter_r else DISABLED
-            self.borders_r[i].config(fg='blue' if i==self.selection_counter_r else 'black')
+            self.borders_r[i].config(fg='red' if i==self.selection_counter_r else 'black')
 
     def submit_order(self):
         if np.sum(self.menu_qty) > 0:
