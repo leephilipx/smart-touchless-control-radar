@@ -20,6 +20,7 @@
 ## Folder Structure
 - Folders with the prefix `acconeer` are sample/setup references files forked from [Acconeer's GitHub](https://github.com/acconeer).
 - The main directory is `final-pipeline`, which contains all the finalised files used.
+- Project admin-related files like **Project Charter** and **Project Report** are password protected for the time being.
 
 <br>
 
